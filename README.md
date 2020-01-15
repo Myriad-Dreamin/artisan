@@ -1,0 +1,2 @@
+# artisan
+golang code generation

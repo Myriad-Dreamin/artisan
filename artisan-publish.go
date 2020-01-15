@@ -53,6 +53,8 @@ import (
 %s
 )
 
+var _ controller.MContext
+
 %s`, packageName, depList(ctx.GetPackages()), svcIface(svc))
 		if err != nil {
 			return

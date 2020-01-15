@@ -2,7 +2,9 @@ package artisan
 
 import (
 	"bytes"
+	"fmt"
 	"reflect"
+	"runtime"
 	"strings"
 	"unicode"
 )
@@ -156,5 +158,30 @@ func toSmallCamel(name string) string {
 		return name
 	} else {
 		return string(unicode.ToLower(rune(name[0]))) + name[1:]
+	}
+}
+
+func getServiceName(name string) string {
+	if len(name) == 0 {
+		return "<embed-service>"
+	}
+	return name
+}
+
+type caller struct {
+	fn, file string
+	int
+}
+
+func (c caller) String() string {
+	return fmt.Sprintf(`<function %s, file %s, line %d>`, c.fn, c.file, c.int)
+}
+
+func getCaller(skip int) caller {
+	pc, f, l, _ := runtime.Caller(skip + 2)
+	return caller{
+		fn:   runtime.FuncForPC(pc).Name(),
+		file: f,
+		int:  l,
 	}
 }

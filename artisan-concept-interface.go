@@ -23,6 +23,7 @@ type CategoryDescription interface {
 	GetName() string
 	GetPath() string
 	GetMethods() []MethodDescription
+	GetObjects() []ObjectDescription
 }
 
 type MethodDescription interface {
@@ -81,9 +82,14 @@ type Category interface {
 	RawMethod(m ...Method) Category
 	Method(m MethodType, descriptions ...interface{}) Category
 
+	Object(descriptions ...interface{}) Category
+	AppendObject(objs ...SerializeObject) Category
+
 	GetPath() string
 
 	CreateCategoryDescription(ctx *Context) CategoryDescription
+
+	HelpWrapObjectXXX(skip int, descriptions ...interface{}) Category
 }
 
 type Method interface {
@@ -93,9 +99,14 @@ type Method interface {
 }
 
 type SerializeObject interface {
+	DebuggerObject
 	CreateObjectDescription(ctx *Context) ObjectDescription
 }
 
 type Parameter interface {
 	CreateParameterDescription(ctx *Context) ParameterDescription
+}
+
+type DebuggerObject interface {
+	DefiningPosition() string
 }

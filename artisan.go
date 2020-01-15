@@ -1,11 +1,14 @@
 package artisan
 
-import "reflect"
+import (
+	"reflect"
+)
 
 func NewService(rawSvc ...ProposingService) *PublishingServices {
 	return &PublishingServices{
 		rawSvc:      rawSvc,
 		packageName: "control",
+		wildSvc:     newWildService(),
 	}
 }
 
@@ -22,32 +25,15 @@ func Transfer(name string, base interface{}) *transferClass {
 }
 
 func Reply(descriptions ...interface{}) ReplyObject {
-	return ReplyObject{s: Object(descriptions...)}
+	return ReplyObject{s: newSerializeObject(2, descriptions...)}
 }
 
 func Request(descriptions ...interface{}) RequestObject {
-	return RequestObject{s: Object(descriptions...)}
+	return RequestObject{s: newSerializeObject(2, descriptions...)}
 }
 
 func Object(descriptions ...interface{}) SerializeObject {
-	var parameters []Parameter
-	var name string
-	for i := range descriptions {
-		switch desc := descriptions[i].(type) {
-		case SerializeObject:
-			return desc
-		case Parameter:
-			parameters = append(parameters, desc)
-		case []Parameter:
-			parameters = append(parameters, desc...)
-		case string:
-			name = desc
-		}
-	}
-	return &serializeObject{
-		name:   name,
-		params: parameters,
-	}
+	return newSerializeObject(1, descriptions...)
 }
 
 func Param(name string, descriptions ...interface{}) Parameter {

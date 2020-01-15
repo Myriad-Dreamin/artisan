@@ -9,6 +9,8 @@ import (
 type PublishedServices struct {
 	svc         []ServiceDescription
 	packageName string
+	//wildObjTemplates []ObjTmpl
+	wildSvc ServiceDescription
 }
 
 func (c *PublishedServices) Publish() error {
@@ -27,57 +29,64 @@ func (c *PublishedServices) writeToFiles() (err error) {
 
 func (c *PublishedServices) writeSVCsAndDTOs() (err error) {
 	for i := range c.svc {
+		err = publish(c.packageName, c.svc[i])
 		if err != nil {
 			return
 		}
-		svc := c.svc[i]
+	}
+	err = publish(c.packageName, c.wildSvc)
+	return
+}
 
-		ctx := newTmplContext(svc)
-		ctx.AppendPackage("github.com/Myriad-Dreamin/minimum-lib/controller")
+func publish(packageName string, svc ServiceDescription) (err error) {
+	ctx := newTmplContext(svc)
+	ctx.AppendPackage("github.com/Myriad-Dreamin/minimum-lib/controller")
 
-		objs, funcs := svc.GenerateObjects(DefaultFunctionTmplFactories, ctx)
+	objs, funcs := svc.GenerateObjects(DefaultFunctionTmplFactories, ctx)
 
-		//fmt.Println(packages)
-		sugar.WithWriteFile(func(f *os.File) {
-			_, err = fmt.Fprintf(f, `
+	//fmt.Println(packages)
+	sugar.WithWriteFile(func(f *os.File) {
+		_, err = fmt.Fprintf(f, `
 package %s
 
 import (
 %s
 )
 
-%s`, c.packageName, depList(ctx.GetPackages()), svcIface(svc))
+%s`, packageName, depList(ctx.GetPackages()), svcIface(svc))
+		if err != nil {
+			return
+		}
+
+		for _, obj := range objs {
+			_, err = f.WriteString(obj.String())
 			if err != nil {
 				return
 			}
-
-			for _, obj := range objs {
-				_, err = f.WriteString(obj.String())
-				if err != nil {
-					return
-				}
-				_, err = f.WriteString("\n")
-				if err != nil {
-					return
-				}
+			_, err = f.WriteString("\n")
+			if err != nil {
+				return
 			}
+		}
 
-			for _, v := range funcs {
-				_, err = f.WriteString(v.String())
-				if err != nil {
-					return
-				}
-				_, err = f.WriteString("\n")
-				if err != nil {
-					return
-				}
+		for _, v := range funcs {
+			_, err = f.WriteString(v.String())
+			if err != nil {
+				return
 			}
-		}, svc.GetFilePath())
-	}
+			_, err = f.WriteString("\n")
+			if err != nil {
+				return
+			}
+		}
+	}, svc.GetFilePath())
 	return
 }
 
 func svcIface(svc ServiceDescription) string {
+	if len(svc.GetName()) == 0 {
+		return ""
+	}
 	return fmt.Sprintf(`
 type %s interface {
 %s

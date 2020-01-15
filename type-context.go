@@ -5,9 +5,11 @@ import (
 )
 
 type Context struct {
-	vars     map[string]interface{}
-	method   Method
-	svc      ProposingService
+	vars   map[string]interface{}
+	method Method
+	rawSvc ProposingService
+	svc    ServiceDescription
+
 	sources  map[uintptr]*source
 	packages map[string]bool
 }
@@ -16,7 +18,7 @@ func (c *Context) clone() *Context {
 	return &Context{
 		vars:     c.vars,
 		method:   c.method,
-		svc:      c.svc,
+		rawSvc:   c.rawSvc,
 		sources:  c.sources,
 		packages: clonePackage(c.packages),
 	}
@@ -26,7 +28,7 @@ func (c *Context) sub() *Context {
 	return &Context{
 		vars:    c.vars,
 		method:  c.method,
-		svc:     c.svc,
+		rawSvc:  c.rawSvc,
 		sources: c.sources,
 	}
 }
@@ -61,7 +63,7 @@ func (c *Context) getSource(ptr uintptr) *source {
 
 func (c *Context) makeSources() {
 	c.sources = make(map[uintptr]*source)
-	models := c.svc.GetModels()
+	models := c.rawSvc.GetModels()
 	for _, xmodel := range models {
 		v, t := reflect.ValueOf(xmodel.refer).Elem(), reflect.TypeOf(xmodel.refer).Elem()
 		tt := t

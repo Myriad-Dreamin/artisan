@@ -30,6 +30,14 @@ func GenerateObjects(
 				funcs = append(funcs, fs...)
 			}
 		}
+
+		ctx.SetObjectType(ObjectTypeObject)
+		for _, obj := range cat.GetObjects() {
+			os, fs := dumpObj(ctx, tmplFactories, obj)
+			objs = append(objs, os...)
+			funcs = append(funcs, fs...)
+		}
+
 		ctx.PopCategory()
 	}
 	return

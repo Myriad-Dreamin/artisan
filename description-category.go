@@ -6,7 +6,12 @@ type categoryDescription struct {
 	subCates      map[string]CategoryDescription
 	tmplFactories []FuncTmplFac
 	methods       []MethodDescription
+	objDesc       []ObjectDescription
 	packages      PackageSet
+}
+
+func (c *categoryDescription) GetObjects() []ObjectDescription {
+	return c.objDesc
 }
 
 func (c *categoryDescription) GenerateObjects(ts []FuncTmplFac, ctx TmplCtx) (objs []ObjTmpl, funcs []FuncTmpl) {

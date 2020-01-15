@@ -1,9 +1,10 @@
 package artisan
 
 type category struct {
-	path    string
-	methods []Method
-	subs    map[string]Category
+	path        string
+	methods     []Method
+	wildObjects []SerializeObject
+	subs        map[string]Category
 }
 
 func newCategory() *category {
@@ -50,11 +51,26 @@ func (c *category) Method(m MethodType, descriptions ...interface{}) Category {
 		case RequestObject:
 			method.requests = append(method.requests, desc)
 		case ReplyObject:
-			method.requests = append(method.requests, desc)
+			method.replies = append(method.replies, desc)
 		}
 	}
 
 	c.methods = append(c.methods, method)
+	return c
+}
+
+func (c *category) Object(descriptions ...interface{}) Category {
+	c.wildObjects = append(c.wildObjects, newSerializeObject(1, descriptions...))
+	return c
+}
+
+func (c *category) HelpWrapObjectXXX(skip int, descriptions ...interface{}) Category {
+	c.wildObjects = append(c.wildObjects, newSerializeObject(skip+1, descriptions...))
+	return c
+}
+
+func (c *category) AppendObject(objs ...SerializeObject) Category {
+	c.wildObjects = append(c.wildObjects, objs...)
 	return c
 }
 
@@ -64,6 +80,9 @@ func (c *category) CreateCategoryDescription(ctx *Context) CategoryDescription {
 		subCtx := ctx.sub()
 		desc.methods = append(desc.methods, method.CreateMethodDescription(subCtx))
 		desc.packages = inplaceMergePackage(desc.packages, subCtx.packages)
+	}
+	for _, obj := range c.wildObjects {
+		desc.objDesc = append(desc.objDesc, obj.CreateObjectDescription(ctx))
 	}
 
 	for _, sub := range c.subs {

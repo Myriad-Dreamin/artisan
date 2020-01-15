@@ -98,7 +98,7 @@ type ObjectCategories struct {
 }
 ```
 
-如果你熟悉`gin`，那么Category大体相当于一个RouterGroup，且artisan.Method(MethodType, ...)对应为gin.Handle(httpMethod, ...)
+如果你熟悉`gin`，那么`Category`大体相当于一个`gin.RouteGroup`，且`artisan.Method(MethodType, ...)`对应为`gin.Handle(httpMethod, ...)`
 
 `Object`依赖于一个上下文，一般来说`Method`概念下的`Object`要么是一个请求`Request`，要么是一个响应`Response/Reply`，默认`Object`名字为`CategoryName + Request/Reply`，如果没有上下文（比如`wildObject`）或产生冲突，编译器会产生一个错误。
 
@@ -291,6 +291,8 @@ func DescribeUserService(base string) artisan.ProposingService {
 	return svc
 }
 ```
+
+生成的文件参考`https://github.com/Myriad-Dreamin/artisan/tree/8deac2c1128ae488a5e96e284766413421132110/example/complex/control`
 
 # artisan常量
 

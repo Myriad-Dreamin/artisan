@@ -1,8 +1,14 @@
 package artisan
 
 type inheritClass struct {
+	uuid  UUID
 	name  string
 	bases []interface{}
+	dp    string
+}
+
+func (i inheritClass) DefiningPosition() string {
+	return i.dp
 }
 
 func (i inheritClass) GenObjectTmpl() ObjTmpl {
@@ -11,6 +17,10 @@ func (i inheritClass) GenObjectTmpl() ObjTmpl {
 
 func (i inheritClass) GetType() Type {
 	panic("implement me")
+}
+
+func (i inheritClass) GetUUID() UUID {
+	return i.uuid
 }
 
 func (i inheritClass) String() string {

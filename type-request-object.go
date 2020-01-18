@@ -9,6 +9,6 @@ func (r RequestObject) DefiningPosition() string {
 }
 
 func (r RequestObject) CreateObjectDescription(ctx *Context) ObjectDescription {
-	ctx.set("obj_suf", "Request")
+	ctx.Set("obj_suf", "Request")
 	return r.s.CreateObjectDescription(ctx)
 }

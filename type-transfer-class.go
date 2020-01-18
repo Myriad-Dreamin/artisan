@@ -5,18 +5,28 @@ import (
 )
 
 type transferClass struct {
+	uuid     UUID
 	name     string
+	dp       string
 	base     interface{}
 	baseType reflect.Type
 }
 
+func (i transferClass) DefiningPosition() string {
+	return i.dp
+}
+
 func (i transferClass) CreateObjectDescription(ctx *Context) ObjectDescription {
-	ctx.appendPackage(reflect.TypeOf(i.base).PkgPath())
+	ctx.AppendPackage(reflect.TypeOf(i.base).PkgPath())
 	return i
 }
 
 func (i transferClass) GetTypeString() string {
 	return i.name
+}
+
+func (i transferClass) GetUUID() UUID {
+	return i.uuid
 }
 
 func (i transferClass) GenObjectTmpl() ObjTmpl {

@@ -16,12 +16,17 @@ func Ink(_ ...interface{}) Category {
 	return newCategory()
 }
 
-func Inherit(name string, bases ...interface{}) *inheritClass {
-	return &inheritClass{name: name, bases: bases}
+func Inherit(name string, bases ...interface{}) SerializeObject {
+	return &inheritClass{name: name, bases: bases,
+		uuid: MustUUID(),
+		dp:   getCaller(1).String()}
 }
 
-func Transfer(name string, base interface{}) *transferClass {
-	return &transferClass{name: name, base: base, baseType: reflect.TypeOf(base)}
+func Transfer(name string, base interface{}) SerializeObject {
+	return &transferClass{
+		name: name, base: base, baseType: reflect.TypeOf(base),
+		uuid: MustUUID(),
+		dp:   getCaller(1).String()}
 }
 
 func Reply(descriptions ...interface{}) ReplyObject {

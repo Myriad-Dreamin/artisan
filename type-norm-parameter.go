@@ -49,7 +49,7 @@ func (n *norm) CreateParameterDescription(ctx *Context) ParameterDescription {
 	} else {
 		desc.pType = parseParamType(ctx, n)
 		desc.source = parseSource(ctx, n)
-		ctx.appendPackage(getReflectElementType(n.param).PkgPath())
+		ctx.AppendPackage(getReflectElementType(n.param).PkgPath())
 	}
 	desc.tags = make(map[string]string)
 	desc.tags["json"] = desc.name
@@ -66,13 +66,13 @@ func (n *norm) CreateParameterDescription(ctx *Context) ParameterDescription {
 }
 
 func parseSource(context *Context, n *norm) *source {
-	return context.getSource(n.param.UnsafeAddr())
+	return context.GetSource(n.param.UnsafeAddr())
 }
 
 func parseParamType(ctx *Context, n *norm) Type {
 	t := n.param.Type()
 	if t != nil {
-		ctx.appendPackage(t.PkgPath())
+		ctx.AppendPackage(t.PkgPath())
 		return t
 	} else {
 		panic("nil type")

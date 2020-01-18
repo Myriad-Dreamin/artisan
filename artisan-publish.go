@@ -39,6 +39,10 @@ func (c *PublishedServices) writeSVCsAndDTOs() (err error) {
 }
 
 func publish(packageName string, svc ServiceDescription) (err error) {
+	if len(svc.GetFilePath()) == 0 {
+		return nil
+	}
+
 	ctx := newTmplContext(svc)
 	ctx.AppendPackage("github.com/Myriad-Dreamin/minimum-lib/controller")
 

@@ -35,6 +35,7 @@ type MethodDescription interface {
 
 type Type = fmt.Stringer
 type ObjectDescription interface {
+	GetUUID() UUID
 	GenObjectTmpl() ObjTmpl
 	GetType() Type
 	GetEmbedObject() []ObjectDescription

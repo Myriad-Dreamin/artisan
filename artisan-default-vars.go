@@ -25,6 +25,7 @@ var newTmplContext = defaultNewTmplContext
 func defaultNewTmplContext(svc ServiceDescription) TmplCtx {
 	return &TmplContextImpl{
 		packages: make(PackageSet),
+		uuid:     make(map[string]bool),
 		svc:      svc,
 		meta:     metaFac(),
 	}

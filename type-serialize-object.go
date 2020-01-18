@@ -2,6 +2,7 @@ package artisan
 
 type serializeObject struct {
 	dp     string
+	uuid   UUID
 	params []Parameter
 	name   string
 }
@@ -24,6 +25,7 @@ func newSerializeObject(skip int, descriptions ...interface{}) SerializeObject {
 	return &serializeObject{
 		name:   name,
 		params: parameters,
+		uuid:   MustUUID(),
 		dp:     getCaller(skip).String(),
 	}
 }
@@ -32,14 +34,18 @@ func (obj *serializeObject) DefiningPosition() string {
 	return obj.dp
 }
 
+func (obj serializeObject) GetUUID() UUID {
+	return obj.uuid
+}
+
 func (obj *serializeObject) CreateObjectDescription(ctx *Context) ObjectDescription {
-	desc := new(objectDescription)
+	desc := newObjectDescription(obj.uuid)
 	for _, param := range obj.params {
 		desc.params = append(desc.params, param.CreateParameterDescription(ctx))
 	}
 	desc.name = obj.name
 	if len(desc.name) == 0 {
-		if suf := ctx.get("obj_suf"); suf != nil {
+		if suf := ctx.Get("obj_suf"); suf != nil {
 			if suf, ok := suf.(string); ok {
 				desc.name = ctx.method.GetName() + suf
 			}

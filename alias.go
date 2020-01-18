@@ -4,7 +4,7 @@ func Q(desc ...interface{}) RequestObject {
 	return Request(desc...)
 }
 
-func T(name string, base interface{}) *transferClass {
+func T(name string, base interface{}) SerializeObject {
 	return Transfer(name, base)
 }
 

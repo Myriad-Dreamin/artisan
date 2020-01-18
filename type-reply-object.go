@@ -9,6 +9,6 @@ func (r ReplyObject) DefiningPosition() string {
 }
 
 func (r ReplyObject) CreateObjectDescription(ctx *Context) ObjectDescription {
-	ctx.set("obj_suf", "Reply")
+	ctx.Set("obj_suf", "Reply")
 	return r.s.CreateObjectDescription(ctx)
 }

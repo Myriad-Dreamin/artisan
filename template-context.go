@@ -7,7 +7,18 @@ type TmplContextImpl struct {
 	svc        ServiceDescription
 	categories []CategoryDescription
 
+	uuid map[string]bool
+
 	meta interface{}
+}
+
+func (t *TmplContextImpl) AppendUUID(uuid UUID) bool {
+
+	if _, ok := t.uuid[string(uuid)]; ok {
+		return false
+	}
+	t.uuid[string(uuid)] = true
+	return true
 }
 
 func (t *TmplContextImpl) GetPackages() PackageSet {
@@ -31,6 +42,7 @@ func (t *TmplContextImpl) Clone() TmplCtx {
 		packages:   t.packages,
 		svc:        t.svc,
 		categories: t.categories,
+		uuid:       t.uuid,
 		meta:       t.meta,
 	}
 }

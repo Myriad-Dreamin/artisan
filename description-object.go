@@ -2,11 +2,20 @@ package artisan
 
 type objectDescription struct {
 	name   string
+	uuid   UUID
 	params []ParameterDescription
+}
+
+func newObjectDescription(uuid UUID) *objectDescription {
+	return &objectDescription{uuid: uuid}
 }
 
 func (desc objectDescription) GetType() Type {
 	return pureType{typeString: desc.name}
+}
+
+func (desc objectDescription) GetUUID() UUID {
+	return desc.uuid
 }
 
 func (desc objectDescription) GetEmbedObject() (dx []ObjectDescription) {

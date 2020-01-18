@@ -12,6 +12,8 @@ type TmplCtx interface {
 	MergePackages(pks PackageSet)
 	GetPackages() PackageSet
 
+	AppendUUID(uuid UUID) bool
+
 	GetService() ServiceDescription
 	GetCategories() []CategoryDescription
 	PushCategory(cat CategoryDescription)

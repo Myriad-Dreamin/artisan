@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
-	"strings"
 	"unicode"
 )
 
@@ -123,10 +122,6 @@ func allBig(name string) bool {
 }
 
 func fromBigCamelToSnake(name string) string {
-	// ID, etc...
-	if allBig(name) {
-		return strings.ToLower(name)
-	}
 
 	if len(name) == 0 {
 		return ""
@@ -134,11 +129,16 @@ func fromBigCamelToSnake(name string) string {
 	var b = bytes.NewBuffer(make([]byte, 0, len(name)))
 	b.WriteByte(byte(unicode.ToLower(rune(name[0]))))
 	name = name[1:]
+	var small = false
 	for i := range name {
 		if unicode.IsUpper(rune(name[i])) {
-			b.WriteByte('_')
+			if small {
+				b.WriteByte('_')
+				small = false
+			}
 			b.WriteByte(byte(unicode.ToLower(rune(name[i]))))
 		} else {
+			small = true
 			b.WriteByte(name[i])
 		}
 	}

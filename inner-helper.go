@@ -26,38 +26,6 @@ func search(params []*XParam, sp ParameterDescription) string {
 	}
 }
 
-func clonePackage(m PackageSet) (n PackageSet) {
-	if m == nil {
-		return nil
-	}
-	n = make(PackageSet)
-	for k, v := range m {
-		n[k] = v
-	}
-	return n
-}
-
-func mergePackage(pac PackageSet, oth PackageSet) PackageSet {
-	newPac := make(PackageSet)
-	for k, v := range pac {
-		newPac[k] = v
-	}
-	for k, v := range oth {
-		newPac[k] = v
-	}
-	return newPac
-}
-
-func inplaceMergePackage(pac PackageSet, oth PackageSet) PackageSet {
-	if pac == nil {
-		pac = make(PackageSet)
-	}
-	for k, v := range oth {
-		pac[k] = v
-	}
-	return pac
-}
-
 func getElements(i interface{}) (reflect.Value, reflect.Type) {
 	return getReflectElements(reflect.ValueOf(i))
 }

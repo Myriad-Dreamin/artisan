@@ -18,6 +18,10 @@ func (a arrayType) String() string {
 	return "[]" + a.Type.String()
 }
 
+func (a *arrayParamDescription) GetPackages() PackageSet {
+	return a.ParameterDescription.GetPackages()
+}
+
 func (a *arrayParamDescription) GetType() Type {
 	return a.a
 }

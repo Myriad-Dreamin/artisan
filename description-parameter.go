@@ -6,14 +6,19 @@ import (
 )
 
 type parameterDescription struct {
-	embedObjects []ObjectDescription
-	pType        Type
-	name         string
-	field        Field
-	source       *source
-	tags         map[string]string
+	embedObjects       []ObjectDescription
+	pType              Type
+	name               string
+	field              Field
+	source             *source
+	tags               map[string]string
+	calculatedPackages PackageSet
 
 	hash []byte
+}
+
+func (p *parameterDescription) GetPackages() PackageSet {
+	return p.calculatedPackages
 }
 
 func (p *parameterDescription) Hash() []byte {

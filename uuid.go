@@ -2,8 +2,6 @@ package artisan
 
 import (
 	"crypto/rand"
-	"encoding/hex"
-	"fmt"
 )
 
 type UUID = []byte
@@ -17,7 +15,6 @@ func NewUUID() (UUID, error) {
 	if _, err := rand.Read(dest); err != nil {
 		return nil, err
 	}
-	fmt.Println(hex.EncodeToString(dest))
 	return dest, nil
 }
 

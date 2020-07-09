@@ -33,6 +33,7 @@ type MethodDescription interface {
 	GetName() string
 	GetRequests() []ObjectDescription
 	GetReplies() []ObjectDescription
+	GetPackages() PackageSet
 }
 
 type Type = fmt.Stringer
@@ -44,6 +45,7 @@ type ObjectDescription interface {
 	GetType() Type
 	GetName() string
 	GetEmbedObject() []ObjectDescription
+	GetPackages() PackageSet
 }
 
 type TagI = map[string]string
@@ -56,6 +58,7 @@ type ParameterDescription interface {
 	GetField() Field
 	GetTag() TagI
 	GetEmbedObjects() []ObjectDescription
+	GetPackages() PackageSet
 }
 
 // ProposingService is the Interface of VirtualService
@@ -111,7 +114,7 @@ type Method interface {
 	GetRequestProtocols() []SerializeObject
 	GetResponseProtocols() []SerializeObject
 
-	CreateMethodDescription(ctx *Context) *methodDescription
+	CreateMethodDescription(ctx *Context) MethodDescription
 }
 
 type DebuggerObject interface {

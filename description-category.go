@@ -45,9 +45,15 @@ func (c *categoryDescription) GetPackages() PackageSet {
 	if c == nil {
 		return nil
 	}
-	pac := clonePackage(c.packages)
+	pac := make(PackageSet)
+	for _, method := range c.methods {
+		pac = PackageSetInPlaceMerge(pac, method.GetPackages())
+	}
+	for _, obj := range c.objDesc {
+		pac = PackageSetInPlaceMerge(pac, obj.GetPackages())
+	}
 	//for _, cate := range c.subCates {
-	//	pac = inplaceMergePackage(pac, cate.GetPackages())
+	//	pac = PackageSetInPlaceMerge(pac, cate.GetPackages())
 	//}
 	return pac
 }

@@ -4,10 +4,15 @@ import "reflect"
 
 // todo export
 type source struct {
-	modelName  string
-	faz        reflect.Type
-	fazElem    reflect.Type
-	fieldIndex int
+	modelName            string
+	faz                  reflect.Type
+	fazElem              reflect.Type
+	fieldIndex           int
+	calculatedPackageSet PackageSet
+}
+
+func (s source) GetPackageSet() PackageSet {
+	return s.calculatedPackageSet
 }
 
 func (s source) ParamName() string {

@@ -38,6 +38,7 @@ func GenerateObjects(
 			funcs = append(funcs, fs...)
 		}
 
+		ctx.MergePackages(cat.GetPackages())
 		ctx.PopCategory()
 	}
 	return

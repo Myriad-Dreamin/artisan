@@ -11,7 +11,7 @@ func main() {
 
 	err := artisan.NewService().
 		AppendObject(helloWorldObject, helloWorldObject).
-		SetPackageName("main").WildPath("object.go").Publish()
+		SetPackageName("main").WildToFile("object.go").Publish()
 	if err != nil {
 		fmt.Println(err)
 	}

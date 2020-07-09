@@ -18,9 +18,42 @@ func newWildService() *wildService {
 type PublishingServices struct {
 	rawSvc      []ProposingService
 	packageName string
+	base        string
 
 	mixWildModel bool
 	wildSvc      *wildService
+}
+
+func (c *PublishingServices) GetRawProtocols() []ProposingService {
+	return append(c.rawSvc, c.wildSvc)
+}
+
+func (c *PublishingServices) GetBase() string {
+	return c.base
+}
+
+func (c *PublishingServices) GetPackageName() string {
+	return c.packageName
+}
+
+func (c *PublishingServices) IsMixWildModel() bool {
+	return c.mixWildModel
+}
+
+func (c *PublishingServices) GetWildModels() []*model {
+	return c.wildSvc.GetModels()
+}
+
+func (c *PublishingServices) GetWildName() string {
+	return c.wildSvc.GetName()
+}
+
+func (c *PublishingServices) GetWildBase() string {
+	return c.wildSvc.GetBase()
+}
+
+func (c *PublishingServices) GetWildFilePath() string {
+	return c.wildSvc.GetFilePath()
 }
 
 func (c *PublishingServices) AppendService(rawSvc ...ProposingService) *PublishingServices {
@@ -38,8 +71,18 @@ func (c *PublishingServices) UseModel(models ...*model) *PublishingServices {
 	return c
 }
 
-func (c *PublishingServices) WildPath(filePath string) *PublishingServices {
+func (c *PublishingServices) Base(urlPath string) *PublishingServices {
+	c.base = urlPath
+	return c
+}
+
+func (c *PublishingServices) WildToFile(filePath string) *PublishingServices {
 	c.wildSvc.ToFile(filePath)
+	return c
+}
+
+func (c *PublishingServices) WildBase(urlPath string) *PublishingServices {
+	c.wildSvc.Base(urlPath)
 	return c
 }
 
@@ -56,10 +99,6 @@ func (c *PublishingServices) AppendObject(objs ...SerializeObject) *PublishingSe
 func (c *PublishingServices) SetPackageName(packageName string) *PublishingServices {
 	c.packageName = packageName
 	return c
-}
-
-func (c *PublishingServices) GetPackageName() string {
-	return c.packageName
 }
 
 func (c *PublishingServices) Publish() error {

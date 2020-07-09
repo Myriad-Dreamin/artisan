@@ -21,8 +21,7 @@ func (p pureField) String() string {
 	return p.s
 }
 
-type PackageSet = map[string]bool
-
+//noinspection GoUnusedGlobalVariable
 var (
 	_interface = interface{}(0)
 	Interface  = &_interface
@@ -49,4 +48,5 @@ var (
 	Uint64 = new(int64)
 )
 
+//noinspection GoUnusedGlobalVariable
 var cateType = reflect.TypeOf(new(Category))

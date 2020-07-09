@@ -12,6 +12,10 @@ type transferClass struct {
 	baseType reflect.Type
 }
 
+func (i transferClass) GetPackages() PackageSet {
+	return PackageSetAppend(nil, reflect.TypeOf(i.base).PkgPath())
+}
+
 func (i transferClass) DefiningPosition() string {
 	return i.dp
 }
@@ -20,8 +24,7 @@ func (i transferClass) GetName() string {
 	return i.name
 }
 
-func (i transferClass) CreateObjectDescription(ctx *Context) ObjectDescription {
-	ctx.AppendPackage(reflect.TypeOf(i.base).PkgPath())
+func (i transferClass) CreateObjectDescription(*Context) ObjectDescription {
 	return i
 }
 

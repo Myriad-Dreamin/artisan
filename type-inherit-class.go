@@ -11,6 +11,10 @@ func (i inheritClass) GetName() string {
 	return i.name
 }
 
+func (i inheritClass) GetPackages() PackageSet {
+	panic("todo")
+}
+
 func (i inheritClass) DefiningPosition() string {
 	return i.dp
 }

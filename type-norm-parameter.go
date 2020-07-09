@@ -1,6 +1,7 @@
 package artisan
 
 import (
+	"errors"
 	"reflect"
 )
 
@@ -47,9 +48,14 @@ func (n *norm) CreateParameterDescription(ctx *Context) ParameterDescription {
 		desc.embedObjects = append(desc.embedObjects, objDesc)
 		desc.pType = objDesc.GetType()
 	} else {
-		desc.pType = parseParamType(ctx, n)
+		desc.calculatedPackages = PackageSetAppend(desc.calculatedPackages,
+			getReflectElementType(n.param).PkgPath())
+		desc.pType = parseParamType(desc.calculatedPackages, n)
 		desc.source = parseSource(ctx, n)
-		ctx.AppendPackage(getReflectElementType(n.param).PkgPath())
+		if desc.source != nil {
+			desc.calculatedPackages = PackageSetInPlaceMerge(desc.calculatedPackages,
+				desc.source.GetPackageSet())
+		}
 	}
 	desc.tags = make(map[string]string)
 	desc.tags["json"] = desc.name
@@ -69,10 +75,14 @@ func parseSource(context *Context, n *norm) *source {
 	return context.GetSource(n.param.UnsafeAddr())
 }
 
-func parseParamType(ctx *Context, n *norm) Type {
+func parseParamType(packageSet PackageSet, n *norm) Type {
 	t := n.param.Type()
 	if t != nil {
-		ctx.AppendPackage(t.PkgPath())
+		if packageSet == nil {
+			// todo: norm pos
+			panic(errors.New("package set nil"))
+		}
+		PackageSetAppend(packageSet, t.PkgPath())
 		return t
 	} else {
 		panic("nil type")

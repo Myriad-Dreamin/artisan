@@ -11,6 +11,14 @@ func newObjectDescription(uuid UUID) *objectDescription {
 	return &objectDescription{uuid: uuid}
 }
 
+func (desc objectDescription) GetPackages() PackageSet {
+	var pac PackageSet
+	for _, param := range desc.params {
+		pac = PackageSetInPlaceMerge(pac, param.GetPackages())
+	}
+	return pac
+}
+
 func (desc objectDescription) GetType() Type {
 	return pureType{typeString: desc.name}
 }

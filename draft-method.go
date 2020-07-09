@@ -27,7 +27,7 @@ func newMethod(methodType MethodType) *method {
 	return &method{methodType: methodType}
 }
 
-func (method *method) CreateMethodDescription(ctx *Context) *methodDescription {
+func (method *method) CreateMethodDescription(ctx *Context) MethodDescription {
 	desc := new(methodDescription)
 	ctx.method = method
 	desc.methodType = method.methodType

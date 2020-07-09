@@ -104,16 +104,14 @@ func (c *category) AppendObject(objs ...SerializeObject) Category {
 func (c *category) CreateCategoryDescription(ctx *Context) CategoryDescription {
 	desc := new(categoryDescription)
 	for _, method := range c.methods {
-		subCtx := ctx.Sub()
-		desc.methods = append(desc.methods, method.CreateMethodDescription(subCtx))
-		desc.packages = inplaceMergePackage(desc.packages, subCtx.packages)
+		desc.methods = append(desc.methods, method.CreateMethodDescription(ctx.Sub()))
 	}
 	for _, obj := range c.wildObjects {
 		desc.objDesc = append(desc.objDesc, obj.CreateObjectDescription(ctx))
 	}
 
 	for _, sub := range c.subs {
-		subDesc := sub.CreateCategoryDescription(ctx.Sub())
+		subDesc := sub.CreateCategoryDescription(ctx.Clone())
 		desc.subCates[subDesc.GetName()] = subDesc
 	}
 	desc.name = c.name

@@ -10,8 +10,7 @@ type Context struct {
 	rawSvc ProposingService
 	svc    ServiceDescription
 
-	sources  map[uintptr]*source
-	packages map[string]bool
+	sources map[uintptr]*source
 }
 
 func (c *Context) GetMethod() Method {
@@ -27,13 +26,21 @@ func (c *Context) GetSvc() ServiceDescription {
 }
 
 func (c *Context) Clone() *Context {
-	return &Context{
-		vars:     c.vars,
-		method:   c.method,
-		rawSvc:   c.rawSvc,
-		sources:  c.sources,
-		packages: clonePackage(c.packages),
+	d := &Context{
+		vars:    c.vars,
+		method:  c.method,
+		rawSvc:  c.rawSvc,
+		sources: c.sources,
 	}
+
+	if d.vars != nil {
+		d.vars = make(map[string]interface{})
+		for k, v := range c.vars {
+			d.vars[k] = v
+		}
+	}
+
+	return d
 }
 
 func (c *Context) Sub() *Context {
@@ -42,15 +49,6 @@ func (c *Context) Sub() *Context {
 		method:  c.method,
 		rawSvc:  c.rawSvc,
 		sources: c.sources,
-	}
-}
-
-func (c *Context) AppendPackage(pkg string) {
-	if len(pkg) != 0 {
-		if c.packages == nil {
-			c.packages = make(map[string]bool)
-		}
-		c.packages[pkg] = true
 	}
 }
 
@@ -76,8 +74,8 @@ func (c *Context) GetSource(ptr uintptr) *source {
 func (c *Context) makeSources() {
 	c.sources = make(map[uintptr]*source)
 	models := c.rawSvc.GetModels()
-	for _, xmodel := range models {
-		v, t := reflect.ValueOf(xmodel.refer).Elem(), reflect.TypeOf(xmodel.refer).Elem()
+	for _, rawModel := range models {
+		v, t := reflect.ValueOf(rawModel.refer).Elem(), reflect.TypeOf(rawModel.refer).Elem()
 		tt := t
 		for t.Kind() == reflect.Ptr {
 			v, t = v.Elem(), t.Elem()
@@ -85,10 +83,10 @@ func (c *Context) makeSources() {
 		if t.Kind() != reflect.Struct {
 			panic(ErrNotStruct)
 		}
-		c.AppendPackage(t.PkgPath())
 		for i := 0; i < t.NumField(); i++ {
 			c.sources[v.Addr().Pointer()+t.Field(i).Offset] = &source{
-				modelName: xmodel.name, faz: tt, fazElem: t, fieldIndex: i}
+				modelName: rawModel.name, faz: tt, fazElem: t, fieldIndex: i,
+				calculatedPackageSet: PackageSetAppend(nil, t.PkgPath())}
 		}
 	}
 	//fmt.Println(c.sources)

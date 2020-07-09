@@ -26,7 +26,7 @@ func (t *TmplContextImpl) GetPackages() PackageSet {
 }
 
 func (t *TmplContextImpl) MergePackages(pks PackageSet) {
-	t.packages = inplaceMergePackage(t.packages, pks)
+	t.packages = PackageSetInPlaceMerge(t.packages, pks)
 }
 
 func (t *TmplContextImpl) SetObjectType(oT ObjectType) {

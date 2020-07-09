@@ -7,6 +7,10 @@ type inheritClass struct {
 	dp    string
 }
 
+func (i inheritClass) GetName() string {
+	return i.name
+}
+
 func (i inheritClass) DefiningPosition() string {
 	return i.dp
 }
@@ -36,6 +40,6 @@ func (i inheritClass) GetEmbedObject() []ObjectDescription {
 	return nil
 }
 
-func (i inheritClass) CreateObjectDescription(ctx *Context) ObjectDescription {
+func (i inheritClass) CreateObjectDescription(*Context) ObjectDescription {
 	return i
 }

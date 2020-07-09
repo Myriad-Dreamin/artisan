@@ -4,6 +4,10 @@ type RequestObject struct {
 	s SerializeObject
 }
 
+func (r RequestObject) GetName() string {
+	return r.s.GetName()
+}
+
 func (r RequestObject) DefiningPosition() string {
 	return r.s.DefiningPosition()
 }

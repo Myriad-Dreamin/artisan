@@ -4,6 +4,10 @@ type ReplyObject struct {
 	s SerializeObject
 }
 
+func (r ReplyObject) GetName() string {
+	return r.s.GetName()
+}
+
 func (r ReplyObject) DefiningPosition() string {
 	return r.s.DefiningPosition()
 }

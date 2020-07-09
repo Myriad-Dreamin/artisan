@@ -26,6 +26,8 @@ type CategoryDescription interface {
 	GetObjects() []ObjectDescription
 }
 
+type MethodType int
+
 type MethodDescription interface {
 	GetMethodType() MethodType
 	GetName() string
@@ -35,9 +37,12 @@ type MethodDescription interface {
 
 type Type = fmt.Stringer
 type ObjectDescription interface {
+	DebuggerObject
+
 	GetUUID() UUID
 	GenObjectTmpl() ObjTmpl
 	GetType() Type
+	GetName() string
 	GetEmbedObject() []ObjectDescription
 }
 
@@ -72,10 +77,17 @@ type ProposingService interface {
 	GetFilePath() string
 }
 
-type MethodType int
+type CategoryGetter interface {
+	GetName() string
+	GetPath() string
+	GetMethods() []Method
+	GetWildObjects() []SerializeObject
+	ForEachSubCate(func(path string, cat Category) (shouldStop bool)) error
+}
 
 // todo middleware
 type Category interface {
+	WithName(name string) Category
 	Path(path string) Category
 	SubCate(path string, cat Category) Category
 	DiveIn(path string) Category
@@ -83,10 +95,10 @@ type Category interface {
 	RawMethod(m ...Method) Category
 	Method(m MethodType, descriptions ...interface{}) Category
 
-	Object(descriptions ...interface{}) Category
 	AppendObject(objs ...SerializeObject) Category
+	Object(descriptions ...interface{}) Category
 
-	GetPath() string
+	CategoryGetter
 
 	CreateCategoryDescription(ctx *Context) CategoryDescription
 
@@ -94,20 +106,25 @@ type Category interface {
 }
 
 type Method interface {
+	GetMethodType() MethodType
 	GetName() string
+	GetRequestProtocols() []SerializeObject
+	GetResponseProtocols() []SerializeObject
 
 	CreateMethodDescription(ctx *Context) *methodDescription
 }
 
+type DebuggerObject interface {
+	DefiningPosition() string
+}
+
 type SerializeObject interface {
 	DebuggerObject
+
+	GetName() string
 	CreateObjectDescription(ctx *Context) ObjectDescription
 }
 
 type Parameter interface {
 	CreateParameterDescription(ctx *Context) ParameterDescription
-}
-
-type DebuggerObject interface {
-	DefiningPosition() string
 }

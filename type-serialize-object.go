@@ -34,6 +34,10 @@ func (obj *serializeObject) DefiningPosition() string {
 	return obj.dp
 }
 
+func (obj *serializeObject) GetName() string {
+	return obj.name
+}
+
 func (obj serializeObject) GetUUID() UUID {
 	return obj.uuid
 }
@@ -44,6 +48,7 @@ func (obj *serializeObject) CreateObjectDescription(ctx *Context) ObjectDescript
 		desc.params = append(desc.params, param.CreateParameterDescription(ctx))
 	}
 	desc.name = obj.name
+	desc.dp = obj.dp
 	if len(desc.name) == 0 {
 		if suf := ctx.Get("obj_suf"); suf != nil {
 			if suf, ok := suf.(string); ok {

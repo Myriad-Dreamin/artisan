@@ -2,6 +2,7 @@ package artisan
 
 type objectDescription struct {
 	name   string
+	dp     string
 	uuid   UUID
 	params []ParameterDescription
 }
@@ -12,6 +13,14 @@ func newObjectDescription(uuid UUID) *objectDescription {
 
 func (desc objectDescription) GetType() Type {
 	return pureType{typeString: desc.name}
+}
+
+func (desc objectDescription) GetName() string {
+	return desc.name
+}
+
+func (desc objectDescription) DefiningPosition() string {
+	return desc.dp
 }
 
 func (desc objectDescription) GetUUID() UUID {

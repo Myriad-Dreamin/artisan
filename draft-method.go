@@ -11,6 +11,18 @@ func (method method) GetName() string {
 	return method.name
 }
 
+func (method method) GetMethodType() MethodType {
+	return method.methodType
+}
+
+func (method method) GetRequestProtocols() []SerializeObject {
+	return method.requests
+}
+
+func (method method) GetResponseProtocols() []SerializeObject {
+	return method.replies
+}
+
 func newMethod(methodType MethodType) *method {
 	return &method{methodType: methodType}
 }

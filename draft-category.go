@@ -1,6 +1,7 @@
 package artisan
 
 type category struct {
+	name        string
 	path        string
 	methods     []Method
 	wildObjects []SerializeObject
@@ -9,6 +10,36 @@ type category struct {
 
 func newCategory() *category {
 	return new(category)
+}
+
+func (c *category) GetName() string {
+	return c.name
+}
+
+func (c *category) GetPath() string {
+	return c.path
+}
+
+func (c *category) GetMethods() []Method {
+	return c.methods
+}
+
+func (c *category) GetWildObjects() []SerializeObject {
+	return c.wildObjects
+}
+
+func (c *category) ForEachSubCate(mapFunc func(path string, cat Category) (shouldStop bool)) error {
+	for k, v := range c.subs {
+		if !mapFunc(k, v) {
+			return ErrorStopped
+		}
+	}
+	return nil
+}
+
+func (c *category) WithName(name string) Category {
+	c.name = name
+	return c
 }
 
 func (c *category) Path(path string) Category {
@@ -30,10 +61,6 @@ func (c *category) DiveIn(path string) Category {
 	}
 	c.SubCate(path, cat)
 	return cat
-}
-
-func (c *category) GetPath() string {
-	return c.path
 }
 
 func (c *category) RawMethod(m ...Method) Category {
@@ -89,5 +116,7 @@ func (c *category) CreateCategoryDescription(ctx *Context) CategoryDescription {
 		subDesc := sub.CreateCategoryDescription(ctx.Sub())
 		desc.subCates[subDesc.GetName()] = subDesc
 	}
+	desc.name = c.name
+	desc.path = c.path
 	return desc
 }

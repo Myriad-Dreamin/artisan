@@ -16,6 +16,10 @@ func (i transferClass) DefiningPosition() string {
 	return i.dp
 }
 
+func (i transferClass) GetName() string {
+	return i.name
+}
+
 func (i transferClass) CreateObjectDescription(ctx *Context) ObjectDescription {
 	ctx.AppendPackage(reflect.TypeOf(i.base).PkgPath())
 	return i

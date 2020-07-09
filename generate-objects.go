@@ -1,10 +1,5 @@
 package artisan
 
-import (
-	"fmt"
-	"reflect"
-)
-
 func GenerateObjects(
 	g GenTreeNode, ts []FuncTmplFac, c TmplCtx) (
 	objs []ObjTmpl, funcs []FuncTmpl) {
@@ -50,11 +45,11 @@ func GenerateObjects(
 
 func dumpObj(ctx TmplCtx, factories []FuncTmplFac,
 	desc ObjectDescription) (objs []ObjTmpl, funcs []FuncTmpl) {
-	fmt.Println("testing", reflect.TypeOf(desc), desc.GetUUID())
+	//fmt.Println("testing", reflect.TypeOf(desc), desc.GetUUID())
 	if !ctx.AppendUUID(desc.GetUUID()) {
 		return
 	}
-	fmt.Println(desc.GetType())
+	//fmt.Println(desc.GetType())
 
 	tmpl := desc.GenObjectTmpl()
 	objs = append(objs, tmpl)

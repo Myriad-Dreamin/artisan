@@ -14,11 +14,15 @@ type ObjectCategories struct {
 }
 
 func DescribeObjectService(base string) artisan.ProposingService {
+	meta := Meta{
+		RouterMeta: artisan.RouterMeta{RuntimeRouterMeta: "object"},
+	}
+
 	var objectModel = new(model.Object)
 	svc := &ObjectCategories{
 		List: artisan.Ink().
 			Path("object-list").
-			Method(artisan.POST, "ListObjects",
+			Method(artisan.POST, "ListObjects", artisan.AuthMeta("object@r"),
 				artisan.QT("ListObjectsRequest", model.Filter{}),
 				artisan.Reply(
 					codeField,
@@ -52,7 +56,7 @@ func DescribeObjectService(base string) artisan.ProposingService {
 				artisan.Request()).
 			Method(artisan.DELETE, "Delete"),
 	}
-	svc.Name("ObjectService").Base(base) //.
+	svc.Name("ObjectService").Base(base).Meta(meta) //.
 	//UseModel(serial.Model(serial.Name("object"), &objectModel))
 	return svc
 }

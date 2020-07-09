@@ -10,6 +10,7 @@ import (
 type serviceDescription struct {
 	name          string
 	base          string
+	meta          interface{}
 	tmplFactories []FuncTmplFac
 	categories    []CategoryDescription
 	filePath      string
@@ -32,6 +33,10 @@ func (svc serviceDescription) GetBase() string {
 	return svc.base
 }
 
+func (svc serviceDescription) GetMeta() interface{} {
+	return svc.meta
+}
+
 func (svc serviceDescription) GetCategories() []CategoryDescription {
 	return svc.categories
 }
@@ -45,12 +50,8 @@ func (svc *serviceDescription) SetFilePath(fp string) ServiceDescription {
 	return svc
 }
 
-func (svc serviceDescription) GenerateObjects(ts []FuncTmplFac, c TmplCtx) (objs []ObjTmpl, functions []FuncTmpl) {
+func (svc *serviceDescription) GenerateObjects(ts []FuncTmplFac, c TmplCtx) (objs []ObjTmpl, functions []FuncTmpl) {
 	return GenerateObjects(svc, ts, c)
-}
-
-type PublishOptions struct {
-	InterfaceStyle string
 }
 
 func (svc *serviceDescription) PublishAll(packageName string, opts *PublishOptions) (err error) {
@@ -121,6 +122,15 @@ type %s interface {
 %s
 }`, svc.GetName(), svcMethods(svc))
 	}
+}
+
+func (svc *serviceDescription) GenerateRouterFunc(ctx TmplCtx, interfaceStyle string) (
+	string, string) {
+	sn := ctx.Get(VarContextServiceStructName)
+	ctx.Set(VarContextServiceStructName, svc.GetName())
+	a, b := GenTreeNodeRouteGen(ctx, svc, interfaceStyle)
+	ctx.Set(VarContextServiceStructName, sn)
+	return a, b
 }
 
 func (svc *serviceDescription) GenerateObjectString(objs []ObjTmpl, functions []FuncTmpl) string {

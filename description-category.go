@@ -3,6 +3,7 @@ package artisan
 type categoryDescription struct {
 	name          string
 	path          string
+	meta          interface{}
 	subCates      map[string]CategoryDescription
 	tmplFactories []FuncTmplFac
 	methods       []MethodDescription
@@ -12,6 +13,10 @@ type categoryDescription struct {
 
 func (c *categoryDescription) GetObjects() []ObjectDescription {
 	return c.objDesc
+}
+func (c *categoryDescription) GenerateRouterFunc(ctx TmplCtx, interfaceStyle string) (
+	string, string) {
+	return GenTreeNodeRouteGen(ctx, c, interfaceStyle)
 }
 
 func (c *categoryDescription) GenerateObjects(ts []FuncTmplFac, ctx TmplCtx) (objs []ObjTmpl, funcs []FuncTmpl) {
@@ -26,6 +31,14 @@ func (c *categoryDescription) GetPath() string {
 	return c.path
 }
 
+func (c *categoryDescription) GetBase() string {
+	return c.path
+}
+
+func (c *categoryDescription) GetMeta() interface{} {
+	return c.meta
+}
+
 func (c *categoryDescription) GetCategories() (categories []CategoryDescription) {
 	for _, x := range c.subCates {
 		categories = append(categories, x)
@@ -35,6 +48,11 @@ func (c *categoryDescription) GetCategories() (categories []CategoryDescription)
 
 func (c *categoryDescription) GetMethods() []MethodDescription {
 	return c.methods
+}
+
+func (c *categoryDescription) SetName(n string) CategoryDescription {
+	c.name = n
+	return c
 }
 
 func (c *categoryDescription) GetName() string {

@@ -1,6 +1,7 @@
 package artisan
 
 type category struct {
+	meta        interface{}
 	name        string
 	path        string
 	methods     []Method
@@ -20,12 +21,21 @@ func (c *category) GetPath() string {
 	return c.path
 }
 
+func (c *category) GetMeta() interface{} {
+	return c.meta
+}
+
 func (c *category) GetMethods() []Method {
 	return c.methods
 }
 
 func (c *category) GetWildObjects() []SerializeObject {
 	return c.wildObjects
+}
+
+func (c *category) Meta(m interface{}) Category {
+	c.meta = m
+	return c
 }
 
 func (c *category) ForEachSubCate(mapFunc func(path string, cat Category) (shouldStop bool)) error {
@@ -68,6 +78,8 @@ func (c *category) RawMethod(m ...Method) Category {
 	return c
 }
 
+type AuthMeta string
+
 // todo
 func (c *category) Method(m MethodType, descriptions ...interface{}) Category {
 	method := newMethod(m)
@@ -75,6 +87,8 @@ func (c *category) Method(m MethodType, descriptions ...interface{}) Category {
 		switch desc := description.(type) {
 		case string:
 			method.name = desc
+		case AuthMeta:
+			method.authMeta = string(desc)
 		case RequestObject:
 			method.requests = append(method.requests, desc)
 		case ReplyObject:
@@ -116,5 +130,6 @@ func (c *category) CreateCategoryDescription(ctx *Context) CategoryDescription {
 	}
 	desc.name = c.name
 	desc.path = c.path
+	desc.meta = c.meta
 	return desc
 }

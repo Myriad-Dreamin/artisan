@@ -3,38 +3,48 @@ package artisan
 import "fmt"
 
 type GenTreeNode interface {
+	GetName() string
+	GetBase() string
+	GetMeta() interface{}
+
 	GenerateObjects(ts []FuncTmplFac, c TmplCtx) (objs []ObjTmpl, funcs []FuncTmpl)
 	GetCategories() []CategoryDescription
 	GetTmplFunctionFactory() []FuncTmplFac
 	GetPackages() PackageSet
+	GenerateRouterFunc(ctx TmplCtx, interfaceStyle string) (string, string)
+}
+
+type GenTreeNodeWithMethods interface {
+	GetMethods() []MethodDescription
 }
 
 type ServiceDescription interface {
 	GenTreeNode
 
-	GetName() string
-	GetBase() string
 	GetFilePath() string
 	SetFilePath(fp string) ServiceDescription
 
 	PublishAll(packageName string, opts *PublishOptions) error
 	PublishObjects(packageName string, opts *PublishOptions) error
 	PublishInterface(packageName string, opts *PublishOptions) error
+
+	GenerateInterface(ctx TmplCtx, interfaceStyle string) string
 }
 
 type CategoryDescription interface {
 	GenTreeNode
 
-	GetName() string
 	GetPath() string
 	GetMethods() []MethodDescription
 	GetObjects() []ObjectDescription
+	SetName(n string) CategoryDescription
 }
 
 type MethodType int
 
 type MethodDescription interface {
 	GetMethodType() MethodType
+	GetAuthMeta() string
 	GetName() string
 	GetRequests() []ObjectDescription
 	GetReplies() []ObjectDescription
@@ -73,13 +83,34 @@ type ParameterDescription interface {
 //    Models
 //    Name
 //    FilePath
+
+type IRouterMeta interface {
+	GetRuntimeRouterMeta() string
+	GetNeedAuth() bool
+}
+
+type RouterMeta struct {
+	RuntimeRouterMeta string
+	NeedAuth          bool
+}
+
+func (r RouterMeta) GetRuntimeRouterMeta() string {
+	return r.RuntimeRouterMeta
+}
+
+func (r RouterMeta) GetNeedAuth() bool {
+	return r.NeedAuth
+}
+
 type ProposingService interface {
 	Base(base string) ProposingService
+	Meta(m interface{}) ProposingService
 	UseModel(models ...*model) ProposingService
 	Name(name string) ProposingService
 	ToFile(fileName string) ProposingService
 
 	GetBase() string
+	GetMeta() interface{}
 	GetModels() []*model
 	GetName() string
 	GetFilePath() string
@@ -88,6 +119,7 @@ type ProposingService interface {
 type CategoryGetter interface {
 	GetName() string
 	GetPath() string
+	GetMeta() interface{}
 	GetMethods() []Method
 	GetWildObjects() []SerializeObject
 	ForEachSubCate(func(path string, cat Category) (shouldStop bool)) error
@@ -99,6 +131,7 @@ type Category interface {
 	Path(path string) Category
 	SubCate(path string, cat Category) Category
 	DiveIn(path string) Category
+	Meta(m interface{}) Category
 
 	RawMethod(m ...Method) Category
 	Method(m MethodType, descriptions ...interface{}) Category
@@ -115,6 +148,7 @@ type Category interface {
 
 type Method interface {
 	GetMethodType() MethodType
+	GetAuthMeta() string
 	GetName() string
 	GetRequestProtocols() []SerializeObject
 	GetResponseProtocols() []SerializeObject

@@ -16,6 +16,10 @@ type UserCategories struct {
 }
 
 func DescribeUserService(base string) artisan.ProposingService {
+	meta := Meta{
+		RouterMeta: artisan.RouterMeta{RuntimeRouterMeta: "user"},
+	}
+
 	var userModel = new(model.User)
 	var vUserModel model.User
 	svc := &UserCategories{
@@ -85,7 +89,7 @@ func DescribeUserService(base string) artisan.ProposingService {
 				)).
 			Method(artisan.DELETE, "Delete"),
 	}
-	svc.Name("UserService").Base(base).UseModel(
+	svc.Name("UserService").Base(base).Meta(meta).UseModel(
 		artisan.Model(artisan.Name("user"), &userModel),
 		artisan.Model(artisan.Name("vUser"), &vUserModel))
 	return svc

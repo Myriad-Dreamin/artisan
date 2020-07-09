@@ -21,6 +21,8 @@ type TmplCtx interface {
 
 	SetMeta(interface{})
 	GetMeta() interface{}
+	Set(k string, v interface{})
+	Get(k string) (v interface{})
 }
 
 type FuncTmplFac = func(objTmpl ObjTmpl, ctx TmplCtx) []FuncTmpl

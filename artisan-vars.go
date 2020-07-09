@@ -6,6 +6,11 @@ import (
 	"reflect"
 )
 
+const (
+	VarContextRouteStructName   = "route-struct-name"
+	VarContextServiceStructName = "service-struct-name"
+)
+
 var (
 	ErrNotStruct       = errors.New("not struct")
 	ErrConflictPath    = errors.New("conflict path")
@@ -55,6 +60,18 @@ const (
 	CONNECT
 	TRACE
 )
+
+var MethodTypeMapping = map[MethodType]string{
+	POST:    "POST",
+	GET:     "GET",
+	PATCH:   "PATCH",
+	HEAD:    "HEAD",
+	PUT:     "PUT",
+	DELETE:  "DELETE",
+	OPTION:  "OPTION",
+	CONNECT: "CONNECT",
+	TRACE:   "TRACE",
+}
 
 const (
 	ObjectTypeRequest ObjectType = iota

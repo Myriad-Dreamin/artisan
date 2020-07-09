@@ -3,12 +3,17 @@ package artisan
 type method struct {
 	methodType MethodType
 	name       string
+	authMeta   string
 	requests   []SerializeObject
 	replies    []SerializeObject
 }
 
 func (method method) GetName() string {
 	return method.name
+}
+
+func (method method) GetAuthMeta() string {
+	return method.authMeta
 }
 
 func (method method) GetMethodType() MethodType {
@@ -32,6 +37,7 @@ func (method *method) CreateMethodDescription(ctx *Context) MethodDescription {
 	ctx.method = method
 	desc.methodType = method.methodType
 	desc.name = method.name
+	desc.authMeta = method.authMeta
 	for _, request := range method.requests {
 		desc.requests = append(desc.requests, request.CreateObjectDescription(ctx))
 	}

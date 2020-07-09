@@ -136,6 +136,7 @@ func makeServiceDescription(svc ProposingService) *serviceDescription {
 	desc := &serviceDescription{
 		name:     svc.GetName(),
 		base:     svc.GetBase(),
+		meta:     svc.GetMeta(),
 		filePath: svc.GetFilePath(),
 	}
 	ctx.svc = desc
@@ -150,8 +151,11 @@ func makeServiceDescription(svc ProposingService) *serviceDescription {
 	for i := 0; i < value.NumField(); i++ {
 		field := value.Field(i)
 		if cate, ok := field.Interface().(Category); ok && cate != nil {
-			desc.categories = append(desc.categories,
-				cate.CreateCategoryDescription(ctx))
+			cd := cate.CreateCategoryDescription(ctx)
+			if len(cd.GetName()) == 0 {
+				cd.SetName(svcType.Field(i).Name)
+			}
+			desc.categories = append(desc.categories, cd)
 		}
 	}
 

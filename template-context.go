@@ -10,6 +10,7 @@ type TmplContextImpl struct {
 	uuid map[string]bool
 
 	meta interface{}
+	vars map[string]interface{}
 }
 
 func (t *TmplContextImpl) AppendUUID(uuid UUID) bool {
@@ -44,7 +45,22 @@ func (t *TmplContextImpl) Clone() TmplCtx {
 		categories: t.categories,
 		uuid:       t.uuid,
 		meta:       t.meta,
+		vars:       t.vars,
 	}
+}
+
+func (c *TmplContextImpl) Set(k string, v interface{}) {
+	if c.vars == nil {
+		c.vars = make(map[string]interface{})
+	}
+	c.vars[k] = v
+}
+
+func (c *TmplContextImpl) Get(k string) (v interface{}) {
+	if c.vars != nil {
+		v, _ = c.vars[k]
+	}
+	return
 }
 
 func (t *TmplContextImpl) PushCategory(cat CategoryDescription) {

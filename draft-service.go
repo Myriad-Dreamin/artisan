@@ -13,6 +13,7 @@ type VirtualService struct {
 	models   []*model
 	name     string
 	filePath string
+	meta     interface{}
 }
 
 // Getter of Virtual Service
@@ -33,10 +34,19 @@ func (v *VirtualService) GetFilePath() string {
 	return v.filePath
 }
 
+func (v *VirtualService) GetMeta() interface{} {
+	return v.meta
+}
+
 // Setter of Virtual Service
 
 func (v *VirtualService) Base(base string) ProposingService {
 	v.base = base
+	return v
+}
+
+func (v *VirtualService) Meta(m interface{}) ProposingService {
+	v.meta = m
 	return v
 }
 

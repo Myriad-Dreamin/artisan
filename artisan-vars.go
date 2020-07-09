@@ -7,9 +7,11 @@ import (
 )
 
 var (
-	ErrNotStruct      = errors.New("not struct")
-	ErrConflictPath   = errors.New("conflict path")
-	ErrNotMultipleOf2 = errors.New("not multiple of 2")
+	ErrNotStruct       = errors.New("not struct")
+	ErrConflictPath    = errors.New("conflict path")
+	ErrNotMultipleOf2  = errors.New("not multiple of 2")
+	ErrStopped         = errors.New("stopped")
+	ErrMissingFilePath = errors.New("missing file path")
 )
 
 type ErrorObjectHasNoName struct {
@@ -23,6 +25,7 @@ func (e ErrorObjectHasNoName) Error() string {
 		getServiceName(e.rawSvc.GetName()), reflect.TypeOf(e.rawSvc), e.obj.DefiningPosition())
 }
 
+//noinspection GoUnusedFunction
 func printCategories(descriptions []CategoryDescription) (res string) {
 	for _, cat := range descriptions {
 		if len(res) != 0 {
@@ -40,6 +43,7 @@ func errObjectHasNoName(obj SerializeObject, ctx *Context) error {
 	}
 }
 
+//noinspection GoUnusedConst
 const (
 	POST MethodType = iota
 	GET
@@ -58,6 +62,7 @@ const (
 	ObjectTypeObject
 )
 
+//noinspection GoUnusedConst
 const (
 	TmplTypeStruct TmplType = iota
 	TmplTypeInterface

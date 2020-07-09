@@ -31,7 +31,7 @@ func (c *category) GetWildObjects() []SerializeObject {
 func (c *category) ForEachSubCate(mapFunc func(path string, cat Category) (shouldStop bool)) error {
 	for k, v := range c.subs {
 		if !mapFunc(k, v) {
-			return ErrorStopped
+			return ErrStopped
 		}
 	}
 	return nil

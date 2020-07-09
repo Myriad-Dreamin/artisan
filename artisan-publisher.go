@@ -22,6 +22,8 @@ type PublishingServices struct {
 
 	mixWildModel bool
 	wildSvc      *wildService
+
+	Opts *PublishOptions
 }
 
 func (c *PublishingServices) GetRawProtocols() []ProposingService {
@@ -54,6 +56,11 @@ func (c *PublishingServices) GetWildBase() string {
 
 func (c *PublishingServices) GetWildFilePath() string {
 	return c.wildSvc.GetFilePath()
+}
+
+func (c *PublishingServices) SetOptions(opts *PublishOptions) *PublishingServices {
+	c.Opts = opts
+	return c
 }
 
 func (c *PublishingServices) AppendService(rawSvc ...ProposingService) *PublishingServices {
@@ -107,13 +114,15 @@ func (c *PublishingServices) Publish() error {
 
 func (c *PublishingServices) Final() (d *PublishedServices) {
 	d = new(PublishedServices)
+	d.svcMap = make(map[ProposingService]ServiceDescription)
 	d.packageName = c.packageName
 	d.wildSvc = makeServiceDescription(c.wildSvc)
+	d.Opts = c.Opts
 	for _, svc := range c.rawSvc {
 		if c.mixWildModel {
 			svc.UseModel(c.wildSvc.GetModels()...)
 		}
-		d.svc = append(d.svc, makeServiceDescription(svc))
+		d.svcMap[svc] = makeServiceDescription(svc)
 	}
 	return d
 }

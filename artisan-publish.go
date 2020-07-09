@@ -1,16 +1,41 @@
 package artisan
 
-import (
-	"fmt"
-	"github.com/Myriad-Dreamin/minimum-lib/sugar"
-	"os"
-)
-
 type PublishedServices struct {
-	svc         []ServiceDescription
+	svcMap      map[ProposingService]ServiceDescription
 	packageName string
 	//wildObjTemplates []ObjTmpl
 	wildSvc ServiceDescription
+
+	Opts *PublishOptions
+}
+
+func (c *PublishedServices) PublishInterface(svc ServiceDescription) error {
+	return svc.PublishInterface(c.packageName, c.Opts)
+}
+
+func (c *PublishedServices) PublishObjects(svc ServiceDescription) error {
+	return svc.PublishObjects(c.packageName, c.Opts)
+}
+
+func (c *PublishedServices) SetOptions(opts *PublishOptions) *PublishedServices {
+	c.Opts = opts
+	return c
+}
+
+func (c *PublishedServices) GetPackageName() string {
+	return c.packageName
+}
+
+func (c *PublishedServices) GetService(raw ProposingService) ServiceDescription {
+	return c.svcMap[raw]
+}
+
+func (c *PublishedServices) GetServices() map[ProposingService]ServiceDescription {
+	return c.svcMap
+}
+
+func (c *PublishedServices) GetWildServices() ServiceDescription {
+	return c.wildSvc
 }
 
 func (c *PublishedServices) Publish() error {
@@ -28,83 +53,14 @@ func (c *PublishedServices) writeToFiles() (err error) {
 }
 
 func (c *PublishedServices) writeSVCsAndDTOs() (err error) {
-	for i := range c.svc {
-		err = publish(c.packageName, c.svc[i])
+	for _, svc := range c.svcMap {
+		err = svc.PublishAll(c.packageName, c.Opts)
 		if err != nil {
 			return
 		}
 	}
-	err = publish(c.packageName, c.wildSvc)
-	return
-}
-
-func publish(packageName string, svc ServiceDescription) (err error) {
-	if len(svc.GetFilePath()) == 0 {
-		return nil
-	}
-
-	ctx := newTmplContext(svc)
-	ctx.AppendPackage("github.com/Myriad-Dreamin/minimum-lib/controller")
-
-	objs, funcs := svc.GenerateObjects(DefaultFunctionTmplFactories, ctx)
-
-	//fmt.Println(packages)
-	sugar.WithWriteFile(func(f *os.File) {
-		_, err = fmt.Fprintf(f, `
-package %s
-
-import (
-%s
-)
-
-var _ controller.MContext
-
-%s`, packageName, depList(ctx.GetPackages()), svcIface(svc))
-		if err != nil {
-			return
-		}
-
-		for _, obj := range objs {
-			_, err = f.WriteString(obj.String())
-			if err != nil {
-				return
-			}
-			_, err = f.WriteString("\n")
-			if err != nil {
-				return
-			}
-		}
-
-		for _, v := range funcs {
-			_, err = f.WriteString(v.String())
-			if err != nil {
-				return
-			}
-			_, err = f.WriteString("\n")
-			if err != nil {
-				return
-			}
-		}
-	}, svc.GetFilePath())
-	return
-}
-
-func svcIface(svc ServiceDescription) string {
-	if len(svc.GetName()) == 0 {
-		return ""
-	}
-	return fmt.Sprintf(`
-type %s interface {
-%s
-}`, svc.GetName(), svcMethods(svc))
-}
-
-func svcMethods(svc ServiceDescription) (res string) {
-	res = fmt.Sprintf("    %sSignatureXXX() interface{}\n", svc.GetName())
-	for _, cat := range svc.GetCategories() {
-		for _, method := range cat.GetMethods() {
-			res += "    " + method.GetName() + "(c controller.MContext)\n"
-		}
+	if len(c.wildSvc.GetFilePath()) != 0 {
+		err = c.wildSvc.PublishAll(c.packageName, c.Opts)
 	}
 	return
 }

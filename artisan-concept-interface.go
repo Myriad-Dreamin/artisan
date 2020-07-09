@@ -15,6 +15,11 @@ type ServiceDescription interface {
 	GetName() string
 	GetBase() string
 	GetFilePath() string
+	SetFilePath(fp string) ServiceDescription
+
+	PublishAll(packageName string, opts *PublishOptions) error
+	PublishObjects(packageName string, opts *PublishOptions) error
+	PublishInterface(packageName string, opts *PublishOptions) error
 }
 
 type CategoryDescription interface {

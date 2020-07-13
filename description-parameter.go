@@ -18,7 +18,11 @@ type parameterDescription struct {
 }
 
 func (p *parameterDescription) GetPackages() PackageSet {
-	return p.calculatedPackages
+	var ps = make(PackageSet)
+	for _, obj := range p.embedObjects {
+		PackageSetInPlaceMerge(ps, obj.GetPackages())
+	}
+	return PackageSetInPlaceMerge(ps, p.calculatedPackages)
 }
 
 func (p *parameterDescription) Hash() []byte {

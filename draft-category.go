@@ -10,7 +10,7 @@ type category struct {
 }
 
 func newCategory() *category {
-	return new(category)
+	return &category{subs: make(map[string]Category)}
 }
 
 func (c *category) GetName() string {
@@ -61,7 +61,7 @@ func (c *category) SubCate(path string, cat Category) Category {
 	if _, ok := c.subs[path]; ok {
 		panic(ErrConflictPath)
 	}
-	c.subs[path] = cat
+	c.subs[path] = cat.Path(path)
 	return c
 }
 
@@ -116,7 +116,7 @@ func (c *category) AppendObject(objs ...SerializeObject) Category {
 }
 
 func (c *category) CreateCategoryDescription(ctx *Context) CategoryDescription {
-	desc := new(categoryDescription)
+	desc := &categoryDescription{subCates: make(map[string]CategoryDescription)}
 	for _, method := range c.methods {
 		desc.methods = append(desc.methods, method.CreateMethodDescription(ctx.Sub()))
 	}

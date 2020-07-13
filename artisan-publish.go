@@ -251,7 +251,7 @@ func GenTreeNodeRouteGen(ctx TmplCtx, svc GenTreeNode, interfaceStyle string) (s
 		if x, ok := rsn.(string); ok {
 			sns = x
 		}
-		ctx.Set(VarContextRouteStructName, svc.GetName())
+		ctx.Set(VarContextRouteStructName, sns+svc.GetName())
 
 		var def, invoke, f = routeGen(ctx, interfaceStyle, svc)
 		var methodDefs, methods []string

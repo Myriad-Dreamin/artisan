@@ -41,11 +41,11 @@ var (
 	Int32 = new(int32)
 	Int64 = new(int64)
 
-	Uint   = new(int)
-	Uint8  = new(int8)
-	Uint16 = new(int16)
-	Uint32 = new(int32)
-	Uint64 = new(int64)
+	Uint   = new(uint)
+	Uint8  = new(uint8)
+	Uint16 = new(uint16)
+	Uint32 = new(uint32)
+	Uint64 = new(uint64)
 )
 
 //noinspection GoUnusedGlobalVariable

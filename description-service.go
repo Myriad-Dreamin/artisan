@@ -150,9 +150,17 @@ func (svc *serviceDescription) GenerateObjectString(objs []ObjTmpl, functions []
 func svcMethods(svc ServiceDescription) (res string) {
 	res = fmt.Sprintf("    %sSignatureXXX() interface{}\n", svc.GetName())
 	for _, cat := range svc.GetCategories() {
-		for _, method := range cat.GetMethods() {
-			res += "    " + method.GetName() + "(c controller.MContext)\n"
-		}
+		res += _svcMethods(cat)
+	}
+	return
+}
+
+func _svcMethods(svc CategoryDescription) (res string) {
+	for _, cat := range svc.GetCategories() {
+		res += _svcMethods(cat)
+	}
+	for _, method := range svc.GetMethods() {
+		res += "    " + method.GetName() + "(c controller.MContext)\n"
 	}
 	return
 }

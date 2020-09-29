@@ -6,9 +6,9 @@ import (
 
 func NewService(rawSvc ...ProposingService) *PublishingServices {
 	return &PublishingServices{
-		rawSvc:      rawSvc,
+		RawSvc:      rawSvc,
 		packageName: "control",
-		wildSvc:     newWildService(),
+		WildSvc:     newWildService(),
 	}
 }
 

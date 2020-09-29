@@ -2,6 +2,7 @@ package complex_example
 
 import (
 	"github.com/Myriad-Dreamin/artisan/artisan-core"
+	"github.com/go-openapi/spec"
 )
 
 type CodeRawType = int
@@ -22,14 +23,34 @@ func (m *Meta) NeedAuth() *Meta {
 	}
 }
 
+var UserCate = DescribeUserService("")
+var ObjectCate = DescribeObjectService("").ToFile("control/object.go")
+var V1 = "/v1"
+
 func Generate() *artisan_core.PublishedServices {
-
-	v1 := "v1"
-
-	userCate := DescribeUserService("")
-	objectCate := DescribeObjectService("")
-	objectCate.ToFile("control/object.go")
-
 	return artisan_core.NewService(
-		userCate, objectCate).Base(v1).Final()
+		UserCate, ObjectCate).HumanInfo(spec.Swagger{
+		SwaggerProps: spec.SwaggerProps{
+			Info: &spec.Info{
+				InfoProps: spec.InfoProps{
+					Title:       "Simple Backend",
+					Description: "Complex Example of Artisan",
+					Version:     "v0.1.0",
+				},
+			},
+			//ID:                  "",
+			//Consumes:            nil,
+			//Produces:            nil,
+			//Host:                "",
+			//BasePath:            "",
+			//Paths:               nil,
+			//Definitions:         nil,
+			//Parameters:          nil,
+			//Responses:           nil,
+			//SecurityDefinitions: nil,
+			//Security:            nil,
+			//Tags:                nil,
+			//ExternalDocs:        nil,
+		},
+	}).Base(V1).Final()
 }

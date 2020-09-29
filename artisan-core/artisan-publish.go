@@ -16,6 +16,7 @@ type PublishedServices struct {
 	HumanInfo   interface{}
 	SvcMap      map[ProposingService]ServiceDescription
 	PackageName string
+	Base        string
 	//wildObjTemplates []ObjTmpl
 	WildSvc ServiceDescription
 

@@ -4,13 +4,13 @@ import (
 	"reflect"
 )
 
-type wildService struct {
+type WildService struct {
 	VirtualService
 	WildCate Category
 }
 
-func newWildService() *wildService {
-	return &wildService{
+func newWildService() *WildService {
+	return &WildService{
 		WildCate: newCategory(),
 	}
 }
@@ -18,14 +18,14 @@ func newWildService() *wildService {
 type PublishingServices struct {
 	humanInfo interface{}
 
-	rawSvc      []ProposingService
 	packageName string
 	base        string
 
 	mixWildModel bool
-	wildSvc      *wildService
 
-	Opts *PublishOptions
+	RawSvc  []ProposingService
+	WildSvc *WildService
+	Opts    *PublishOptions
 }
 
 func (c *PublishingServices) GetHumanInfo() interface{} {
@@ -38,7 +38,7 @@ func (c *PublishingServices) HumanInfo(humanInfo interface{}) *PublishingService
 }
 
 func (c *PublishingServices) GetRawProtocols() []ProposingService {
-	return append(c.rawSvc, c.wildSvc)
+	return append(c.RawSvc, c.WildSvc)
 }
 
 func (c *PublishingServices) GetBase() string {
@@ -54,19 +54,19 @@ func (c *PublishingServices) IsMixWildModel() bool {
 }
 
 func (c *PublishingServices) GetWildModels() []*model {
-	return c.wildSvc.GetModels()
+	return c.WildSvc.GetModels()
 }
 
 func (c *PublishingServices) GetWildName() string {
-	return c.wildSvc.GetName()
+	return c.WildSvc.GetName()
 }
 
 func (c *PublishingServices) GetWildBase() string {
-	return c.wildSvc.GetBase()
+	return c.WildSvc.GetBase()
 }
 
 func (c *PublishingServices) GetWildFilePath() string {
-	return c.wildSvc.GetFilePath()
+	return c.WildSvc.GetFilePath()
 }
 
 func (c *PublishingServices) SetOptions(opts *PublishOptions) *PublishingServices {
@@ -75,7 +75,7 @@ func (c *PublishingServices) SetOptions(opts *PublishOptions) *PublishingService
 }
 
 func (c *PublishingServices) AppendService(rawSvc ...ProposingService) *PublishingServices {
-	c.rawSvc = append(c.rawSvc, rawSvc...)
+	c.RawSvc = append(c.RawSvc, rawSvc...)
 	return c
 }
 
@@ -85,7 +85,7 @@ func (c *PublishingServices) MixWildModel() *PublishingServices {
 }
 
 func (c *PublishingServices) UseModel(models ...*model) *PublishingServices {
-	c.wildSvc.UseModel(models...)
+	c.WildSvc.UseModel(models...)
 	return c
 }
 
@@ -95,22 +95,22 @@ func (c *PublishingServices) Base(urlPath string) *PublishingServices {
 }
 
 func (c *PublishingServices) WildToFile(filePath string) *PublishingServices {
-	c.wildSvc.ToFile(filePath)
+	c.WildSvc.ToFile(filePath)
 	return c
 }
 
 func (c *PublishingServices) WildBase(urlPath string) *PublishingServices {
-	c.wildSvc.Base(urlPath)
+	c.WildSvc.Base(urlPath)
 	return c
 }
 
 func (c *PublishingServices) Object(descriptions ...interface{}) *PublishingServices {
-	c.wildSvc.WildCate = c.wildSvc.WildCate.HelpWrapObjectXXX(1, descriptions...)
+	c.WildSvc.WildCate = c.WildSvc.WildCate.HelpWrapObjectXXX(1, descriptions...)
 	return c
 }
 
 func (c *PublishingServices) AppendObject(objs ...SerializeObject) *PublishingServices {
-	c.wildSvc.WildCate = c.wildSvc.WildCate.AppendObject(objs...)
+	c.WildSvc.WildCate = c.WildSvc.WildCate.AppendObject(objs...)
 	return c
 }
 
@@ -126,18 +126,22 @@ func (c *PublishingServices) Publish() error {
 func (c *PublishingServices) Final() (d *PublishedServices) {
 	d = new(PublishedServices)
 	d.HumanInfo = c.humanInfo
-	d.SvcMap = make(map[ProposingService]ServiceDescription)
 	d.PackageName = c.packageName
-	d.WildSvc = makeServiceDescription(c.wildSvc)
+	d.Base = c.base
 	d.Opts = c.Opts
-	for _, svc := range c.rawSvc {
+
+	d.SvcMap = make(map[ProposingService]ServiceDescription)
+	d.WildSvc = makeServiceDescription(c.WildSvc)
+	for _, svc := range c.RawSvc {
 		if c.mixWildModel {
-			svc.UseModel(c.wildSvc.GetModels()...)
+			svc.UseModel(c.WildSvc.GetModels()...)
 		}
 		d.SvcMap[svc] = makeServiceDescription(svc)
 	}
 	return d
 }
+
+var dynCateType = reflect.TypeOf(new(Category)).Elem()
 
 func makeServiceDescription(svc ProposingService) *serviceDescription {
 	// compile models
@@ -164,6 +168,9 @@ func makeServiceDescription(svc ProposingService) *serviceDescription {
 	}
 	for i := 0; i < value.NumField(); i++ {
 		field := value.Field(i)
+		if !field.Type().Implements(dynCateType) {
+			continue
+		}
 		if cate, ok := field.Interface().(Category); ok && cate != nil {
 			cd := cate.CreateCategoryDescription(ctx)
 			if len(cd.GetName()) == 0 {

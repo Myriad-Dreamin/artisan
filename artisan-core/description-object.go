@@ -5,6 +5,8 @@ type objectDescription struct {
 	dp     string
 	uuid   UUID
 	params []ParameterDescription
+
+	cache ObjTmpl
 }
 
 func newObjectDescription(uuid UUID) *objectDescription {
@@ -47,13 +49,18 @@ func (desc *objectDescription) GetType() Type {
 }
 
 func (desc *objectDescription) GenObjectTmpl() ObjTmpl {
+	if desc.cache != nil {
+		return desc.cache
+	}
+
 	xps := desc.genXParams()
-	return &ObjTmplImpl{
+	desc.cache = &ObjTmplImpl{
 		// type desc.name struct {
 		Name: desc.name, TType: TmplTypeStruct,
 		Fields: genStructFields(desc.params, xps),
 		Xps:    xps,
 	}
+	return desc.cache
 }
 
 func (desc *objectDescription) genXParams() (params []*XParam) {

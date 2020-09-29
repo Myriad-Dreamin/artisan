@@ -15,17 +15,6 @@ func genStructFields(descriptions []ParameterDescription, xps []*XParam) (fields
 	return
 }
 
-func instantiateStructFields(fields []ObjTmplField) (res string) {
-	for i := range fields {
-		field := fields[i]
-		if len(res) != 0 {
-			res += "\n"
-		}
-		res += "    " + field.GetName() + " " + field.GetType().String() + " " + genTag(field.GetTag())
-	}
-	return
-}
-
 func genTag(tags map[string]string) (res string) {
 	res = "`"
 	for k, v := range tags {
@@ -36,4 +25,15 @@ func genTag(tags map[string]string) (res string) {
 	}
 	res += "`"
 	return res
+}
+
+func instantiateStructFields(fields []ObjTmplField) (res string) {
+	for i := range fields {
+		field := fields[i]
+		if len(res) != 0 {
+			res += "\n"
+		}
+		res += "    " + field.GetName() + " " + field.GetType().String() + " " + genTag(field.GetTag())
+	}
+	return
 }

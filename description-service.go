@@ -17,14 +17,6 @@ type serviceDescription struct {
 	//packages   map[string]int
 }
 
-func (svc serviceDescription) GetPackages() PackageSet {
-	return nil
-}
-
-func (svc serviceDescription) GetTmplFunctionFactory() []FuncTmplFac {
-	return svc.tmplFactories
-}
-
 func (svc serviceDescription) GetName() string {
 	return svc.name
 }
@@ -37,12 +29,20 @@ func (svc serviceDescription) GetMeta() interface{} {
 	return svc.meta
 }
 
+func (svc serviceDescription) GetTmplFunctionFactory() []FuncTmplFac {
+	return svc.tmplFactories
+}
+
 func (svc serviceDescription) GetCategories() []CategoryDescription {
 	return svc.categories
 }
 
 func (svc serviceDescription) GetFilePath() string {
 	return svc.filePath
+}
+
+func (svc serviceDescription) GetPackages() PackageSet {
+	return nil
 }
 
 func (svc *serviceDescription) SetFilePath(fp string) ServiceDescription {

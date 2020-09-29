@@ -37,6 +37,8 @@ type CategoryDescription interface {
 	GetPath() string
 	GetMethods() []MethodDescription
 	GetObjects() []ObjectDescription
+	IterCategories(callback func(k string, v CategoryDescription) bool) bool
+
 	SetName(n string) CategoryDescription
 }
 
@@ -59,6 +61,7 @@ type ObjectDescription interface {
 	GenObjectTmpl() ObjTmpl
 	GetType() Type
 	GetName() string
+	GetContainingParams() []ParameterDescription
 	GetEmbedObject() []ObjectDescription
 	GetPackages() PackageSet
 }

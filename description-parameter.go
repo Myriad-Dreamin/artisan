@@ -17,14 +17,6 @@ type parameterDescription struct {
 	hash []byte
 }
 
-func (p *parameterDescription) GetPackages() PackageSet {
-	var ps = make(PackageSet)
-	for _, obj := range p.embedObjects {
-		PackageSetInPlaceMerge(ps, obj.GetPackages())
-	}
-	return PackageSetInPlaceMerge(ps, p.calculatedPackages)
-}
-
 func (p *parameterDescription) Hash() []byte {
 	if p.hash == nil {
 		p.genHash()
@@ -32,8 +24,12 @@ func (p *parameterDescription) Hash() []byte {
 	return p.hash
 }
 
-func (p *parameterDescription) GetSource() *source {
-	return p.source
+func (p *parameterDescription) GetEmbedObjects() []ObjectDescription {
+	return p.embedObjects
+}
+
+func (p *parameterDescription) GetType() Type {
+	return p.pType
 }
 
 func (p *parameterDescription) GetDTOName() string {
@@ -44,16 +40,20 @@ func (p *parameterDescription) GetField() Field {
 	return p.field
 }
 
+func (p *parameterDescription) GetSource() *source {
+	return p.source
+}
+
 func (p *parameterDescription) GetTag() TagI {
 	return p.tags
 }
 
-func (p *parameterDescription) GetEmbedObjects() []ObjectDescription {
-	return p.embedObjects
-}
-
-func (p *parameterDescription) GetType() Type {
-	return p.pType
+func (p *parameterDescription) GetPackages() PackageSet {
+	var ps = make(PackageSet)
+	for _, obj := range p.embedObjects {
+		PackageSetInPlaceMerge(ps, obj.GetPackages())
+	}
+	return PackageSetInPlaceMerge(ps, p.calculatedPackages)
 }
 
 func (p *parameterDescription) genHash() {

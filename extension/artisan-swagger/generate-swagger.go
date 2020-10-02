@@ -10,6 +10,7 @@ import (
 	"path"
 	"reflect"
 	"strings"
+	"time"
 )
 
 func unmarshalHumanInfo(source interface{}, target interface{}) {
@@ -109,7 +110,7 @@ func generateMethodsAndObjects(doc *spec.Swagger, tag *spec.Tag, base string, c 
 	var pathItem spec.PathItem
 
 	for _, method := range c.GetMethods() {
-		generatedOperation := generateOperation(doc ,method)
+		generatedOperation := generateOperation(doc, method)
 
 		generatedOperation.Tags = []string{tag.Name}
 		switch method.GetMethodType() {
@@ -139,7 +140,7 @@ func generateMethodsAndObjects(doc *spec.Swagger, tag *spec.Tag, base string, c 
 
 func createRefSchema(schemaName string) spec.Schema {
 	return spec.Schema{
-		SchemaProps:        spec.SchemaProps{
+		SchemaProps: spec.SchemaProps{
 			Ref: spec.MustCreateRef("#/definitions/" + schemaName),
 		},
 	}
@@ -176,13 +177,17 @@ func generateOperation(doc *spec.Swagger, method artisan_core.MethodDescription)
 	o.Responses.StatusCodeResponses[http.StatusOK] = resp
 	mainSchema.AllOf = append(mainSchema.AllOf, responseGeneric)
 	for _, reply := range replies {
-		generateSchema(doc, reply.GenObjectTmpl())
-		mainSchema.AllOf = append(mainSchema.AllOf, createRefSchema(reply.GetType().String()))
+		mainSchema.AllOf = append(mainSchema.AllOf, generateSchema(doc, reply.GenObjectTmpl()))
 	}
 	return o
 }
 
-func generateSchema(doc *spec.Swagger, reply artisan_core.ObjTmpl) {
+func generateSchema(doc *spec.Swagger, transferObject artisan_core.ObjTmpl) spec.Schema {
+	name := transferObject.GetName()
+	if _, ok := doc.Definitions[name]; ok {
+		return createRefSchema(name)
+	}
+
 	var schema spec.Schema
 
 	schema.Type = []string{"object"}
@@ -190,25 +195,52 @@ func generateSchema(doc *spec.Swagger, reply artisan_core.ObjTmpl) {
 	if doc.Definitions == nil {
 		doc.Definitions = make(map[string]spec.Schema)
 	}
-	if _, ok := doc.Definitions[reply.GetName()]; ok {
+
+	for _, field := range transferObject.GetFields() {
+		fieldDTOName := jsonFieldName(field.GetTag()["json"])
+		if fieldDTOName == "-" {
+			continue
+		}
+		schema.Properties[fieldDTOName] = generateTypeSchema(doc, field.GetType())
+	}
+
+	doc.Definitions[name] = schema
+
+	return createRefSchema(name)
+}
+
+func generateTypeSchema(doc *spec.Swagger, field artisan_core.Type) spec.Schema {
+	switch ft := field.(type) {
+	case reflect.Type:
+		return createRuntimeProp(doc, ft)
+	case artisan_core.ObjectDescType:
+		return generateSchema(doc, ft.GenObjectTmpl())
+	case artisan_core.ArrayType:
+		var schema spec.Schema
+		schema.Type = []string{"array"}
+		schema.Items = new(spec.SchemaOrArray)
+		var subSchema = generateTypeSchema(doc, ft.Type)
+		schema.Items.Schema = &subSchema
+		return schema
+	default:
+		panic("todo")
+	}
+}
+
+func jsonFieldName(s string) string {
+	return s
+}
+
+var timeType = reflect.TypeOf(new(time.Time))
+var timeTypeElem = timeType.Elem()
+
+func createRuntimeProp(doc *spec.Swagger, t reflect.Type) (schema spec.Schema) {
+	if t == timeType || t == timeTypeElem {
+		schema.Type = []string{"string"}
+		schema.Format = "date-time"
 		return
 	}
 
-	for _, field := range reply.GetFields() {
-		switch ft := field.GetType().(type) {
-		case reflect.Type:
-			schema.Properties[field.GetTag()["form"]] = createRuntimeProp(ft)
-		case artisan_core.ObjectDescType:
-			generateSchema(doc, ft.GenObjectTmpl())
-			schema.Properties[field.GetTag()["form"]] = createRefSchema(ft.GetType().String())
-		}
-	}
-
-	doc.Definitions[reply.GetName()] = schema
-	return
-}
-
-func createRuntimeProp(t reflect.Type) (schema spec.Schema) {
 	switch t.Kind() {
 	case reflect.Int64:
 		schema.Type = []string{"integer"}
@@ -245,11 +277,11 @@ func createRuntimeProp(t reflect.Type) (schema spec.Schema) {
 	case reflect.Slice:
 		schema.Type = []string{"array"}
 		schema.Items = new(spec.SchemaOrArray)
-		var xSchema = createRuntimeProp(t.Elem())
+		var xSchema = createRuntimeProp(doc, t.Elem())
 		schema.Items.Schema = &xSchema
 	case reflect.Array:
 		schema.Type = []string{"array"}
-		var xSchema = createRuntimeProp(t.Elem())
+		var xSchema = createRuntimeProp(doc, t.Elem())
 		schema.Items.Schema = &xSchema
 	case reflect.String:
 		schema.Type = []string{"string"}
@@ -259,6 +291,32 @@ func createRuntimeProp(t reflect.Type) (schema spec.Schema) {
 	case reflect.Float64:
 		schema.Type = []string{"float"}
 		schema.Format = "float64"
+	case reflect.Ptr:
+		return createRuntimeProp(doc, t.Elem())
+	case reflect.Struct:
+		var name = t.String()
+		if _, ok := doc.Definitions[name]; ok {
+			return
+		}
+		var externalSchema spec.Schema
+
+		externalSchema.Type = []string{"object"}
+		externalSchema.Properties = make(map[string]spec.Schema)
+		if doc.Definitions == nil {
+			doc.Definitions = make(map[string]spec.Schema)
+		}
+
+		for i := 0; i < t.NumField(); i++ {
+			field := t.Field(i)
+			fieldDTOName := jsonFieldName(field.Tag.Get("json"))
+			if fieldDTOName == "-" {
+				continue
+			}
+			externalSchema.Properties[fieldDTOName] = createRuntimeProp(doc, field.Type)
+		}
+
+		doc.Definitions[name] = externalSchema
+		return createRefSchema(name)
 	}
 	return
 }

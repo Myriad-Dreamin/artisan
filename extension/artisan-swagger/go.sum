@@ -3,8 +3,8 @@ cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 cloud.google.com/go v0.37.4/go.mod h1:NHPJ89PdicEuT9hdPXMROBD91xc5uRDxsMtSB16k7hw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
-github.com/Myriad-Dreamin/artisan/artisan-core v0.0.0-20200929201102-f3b4ac68a213 h1:+Z4zvQGvVcnpwAH6v5DH18d3Wv8HKK1fM8oB2cy4U/4=
-github.com/Myriad-Dreamin/artisan/artisan-core v0.0.0-20200929201102-f3b4ac68a213/go.mod h1:1P8vhulEK7pERb/Cc0eLP+ad0v1jFCUtK7Js0rjmJ4E=
+github.com/Myriad-Dreamin/artisan/artisan-core v0.0.0-20201002054049-75d6a0a6ce76 h1:y13TixT8NZdN8Bxz4WTDhgNjQM76Dx5HxabRAMpOukY=
+github.com/Myriad-Dreamin/artisan/artisan-core v0.0.0-20201002054049-75d6a0a6ce76/go.mod h1:1P8vhulEK7pERb/Cc0eLP+ad0v1jFCUtK7Js0rjmJ4E=
 github.com/Myriad-Dreamin/go-parse-package v1.0.0/go.mod h1:kb2R+hypYiYQm3D4JqY/IuI4GG9cdh735vW/AMJyFgE=
 github.com/Myriad-Dreamin/go-parse-package v1.0.1/go.mod h1:kb2R+hypYiYQm3D4JqY/IuI4GG9cdh735vW/AMJyFgE=
 github.com/Myriad-Dreamin/minimum-lib v0.0.0-20191222020721-aa5c7417baf3/go.mod h1:GKUoai77HJVOQtM7DoI3qwm77AOzFAy3LpeUzYjLgzg=

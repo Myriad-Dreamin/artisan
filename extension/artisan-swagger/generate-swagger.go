@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"path"
 	"reflect"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -148,11 +147,15 @@ func generateMethodsAndObjects(doc *spec.Swagger, tag *spec.Tag, base string, c 
 		}
 	}
 
-	if doc.Paths.Paths == nil {
-		doc.Paths.Paths = make(map[string]spec.PathItem)
-	}
+	if len(c.GetMethods()) != 0 {
 
-	doc.Paths.Paths[subBase] = pathItem
+
+		if doc.Paths.Paths == nil {
+			doc.Paths.Paths = make(map[string]spec.PathItem)
+		}
+
+		doc.Paths.Paths[subBase] = pathItem
+	}
 }
 
 func createRefSchema(schemaName string) spec.Schema {
@@ -168,12 +171,15 @@ var responseGeneric = createRefSchema("genericResponse")
 func generateOperation(doc *spec.Swagger, base string, wilds []string, method artisan_core.MethodDescription) *spec.Operation {
 	var o = new(spec.Operation)
 
-	o.ID = method.GetName()
+	name := method.GetName()
+	o.ID = name
 
 	// generate path variables
 
 	var param spec.Parameter
 	param.In = "path"
+	param.Type = "string"
+	param.Required = true
 	for i := range wilds {
 		param.Name = wilds[i]
 		o.Parameters = append(o.Parameters, param)
@@ -195,30 +201,55 @@ func generateOperation(doc *spec.Swagger, base string, wilds []string, method ar
 
 	requests := method.GetRequests()
 
-	for i, request := range requests {
+	for _, request := range requests {
 
 		if method.GetMethodType() == artisan_core.GET {
 			for _, field := range request.GenObjectTmpl().GetFields() {
-				var param spec.Parameter
 				fieldDTOName := jsonFieldName(field.GetTag()["json"])
 				if fieldDTOName == "-" {
 					continue
 				}
-				requestSchema := createRuntimeProp(doc, field.GetType().(reflect.Type))
-				param.Name = fieldDTOName
-				param.Schema = &requestSchema
 
-				param.In = inType
-				o.Parameters = append(o.Parameters, param)
+				xxx := strings.HasSuffix(field.GetSource().TypeOf, "Filter")
+				_ = xxx
+				requestSchema := createRuntimeProp(doc, field.GetType().(reflect.Type))
+
+				if requestSchema.Ref.HasFragmentOnly {
+					requestSchema = doc.Definitions[requestSchema.Ref.String()[len("#/definitions/"):]]
+
+					for k, sf := range requestSchema.Properties {
+						var param spec.Parameter
+
+						param.Name = k
+						param.Type = sf.Type[0]
+						param.Format = sf.Format
+
+						param.In = inType
+						o.Parameters = append(o.Parameters, param)
+					}
+
+				} else {
+					var param spec.Parameter
+
+					param.Name = fieldDTOName
+					param.Type = requestSchema.Type[0]
+					param.Format = requestSchema.Format
+
+					param.In = inType
+					o.Parameters = append(o.Parameters, param)
+				}
 			}
 		} else {
 			var param spec.Parameter
 
-			requestSchema := generateSchema(doc, request.GenObjectTmpl())
-			param.Name = "request.option" + strconv.Itoa(i)
-			param.Schema = &requestSchema
+			obj := request.GenObjectTmpl()
 
+			requestSchema := generateSchema(doc, obj)
+			// param.Ref = requestSchema.Ref
 			param.In = inType
+			param.Schema = &requestSchema
+			param.Name = obj.GetName()
+
 			o.Parameters = append(o.Parameters, param)
 		}
 	}
@@ -358,7 +389,7 @@ func createRuntimeProp(doc *spec.Swagger, t reflect.Type) (schema spec.Schema) {
 	case reflect.Struct:
 		var name = t.String()
 		if _, ok := doc.Definitions[name]; ok {
-			return
+			return createRefSchema(name)
 		}
 		var externalSchema spec.Schema
 

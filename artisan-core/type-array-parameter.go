@@ -6,15 +6,15 @@ type arrayParam struct {
 
 type arrayParamDescription struct {
 	ParameterDescription
-	a arrayType
+	a ArrayType
 }
 
-type arrayType struct {
+type ArrayType struct {
 	Type
 	typeString string
 }
 
-func (a arrayType) String() string {
+func (a ArrayType) String() string {
 	return "[]" + a.Type.String()
 }
 
@@ -30,6 +30,6 @@ func (a arrayParam) CreateParameterDescription(ctx *Context) ParameterDescriptio
 	desc := &arrayParamDescription{
 		ParameterDescription: a.p.CreateParameterDescription(ctx),
 	}
-	desc.a = arrayType{Type: desc.ParameterDescription.GetType()}
+	desc.a = ArrayType{Type: desc.ParameterDescription.GetType()}
 	return desc
 }

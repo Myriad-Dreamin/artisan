@@ -97,6 +97,18 @@ func GenerateSwagger(desc *artisan_core.PublishedServices) *spec.Swagger {
 	return doc
 }
 
+func toSwaggerStyle(s string) (_ string, wilds []string) {
+	x := strings.Split(s, "/")
+	for i := range x {
+		if len(x[i]) > 0 && x[i][0] == ':' {
+			wilds = append(wilds, x[i][1:])
+			x[i] = "{" + x[i][1:] + "}"
+		}
+	}
+
+	return strings.Join(x, "/"), wilds
+}
+
 func generateMethodsAndObjects(doc *spec.Swagger, tag *spec.Tag, base string, c artisan_core.CategoryDescription) {
 	_ = c.GetMeta()
 	_ = c.GetName()
@@ -108,10 +120,14 @@ func generateMethodsAndObjects(doc *spec.Swagger, tag *spec.Tag, base string, c 
 		generateMethodsAndObjects(doc, tag, subBase, subCat)
 	}
 
+	var wilds []string
+
+	subBase, wilds = toSwaggerStyle(subBase)
+
 	var pathItem spec.PathItem
 
 	for _, method := range c.GetMethods() {
-		generatedOperation := generateOperation(doc, method)
+		generatedOperation := generateOperation(doc, subBase, wilds, method)
 
 		generatedOperation.Tags = []string{tag.Name}
 		switch method.GetMethodType() {
@@ -149,14 +165,24 @@ func createRefSchema(schemaName string) spec.Schema {
 
 var responseGeneric = createRefSchema("genericResponse")
 
-func generateOperation(doc *spec.Swagger, method artisan_core.MethodDescription) *spec.Operation {
+func generateOperation(doc *spec.Swagger, base string, wilds []string, method artisan_core.MethodDescription) *spec.Operation {
 	var o = new(spec.Operation)
 
 	o.ID = method.GetName()
+
+	// generate path variables
+
+	var param spec.Parameter
+	param.In = "path"
+	for i := range wilds {
+		param.Name = wilds[i]
+		o.Parameters = append(o.Parameters, param)
+	}
+
 	var inType string
 
 	if method.GetMethodType() == artisan_core.GET {
-		o.Consumes = []string{"querystring"}
+		o.Consumes = []string{}
 		o.Produces = []string{"application/json"}
 		inType = "query"
 	} else {
@@ -170,12 +196,31 @@ func generateOperation(doc *spec.Swagger, method artisan_core.MethodDescription)
 	requests := method.GetRequests()
 
 	for i, request := range requests {
-		var param spec.Parameter
-		requestSchema := generateSchema(doc, request.GenObjectTmpl())
-		param.Name = "request.option" + strconv.Itoa(i)
-		param.Schema = &requestSchema
-		param.In = inType
-		o.Parameters = append(o.Parameters, param)
+
+		if method.GetMethodType() == artisan_core.GET {
+			for _, field := range request.GenObjectTmpl().GetFields() {
+				var param spec.Parameter
+				fieldDTOName := jsonFieldName(field.GetTag()["json"])
+				if fieldDTOName == "-" {
+					continue
+				}
+				requestSchema := createRuntimeProp(doc, field.GetType().(reflect.Type))
+				param.Name = fieldDTOName
+				param.Schema = &requestSchema
+
+				param.In = inType
+				o.Parameters = append(o.Parameters, param)
+			}
+		} else {
+			var param spec.Parameter
+
+			requestSchema := generateSchema(doc, request.GenObjectTmpl())
+			param.Name = "request.option" + strconv.Itoa(i)
+			param.Schema = &requestSchema
+
+			param.In = inType
+			o.Parameters = append(o.Parameters, param)
+		}
 	}
 
 	// generate responses

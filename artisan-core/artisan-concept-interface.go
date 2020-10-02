@@ -59,6 +59,15 @@ type MethodDescription interface {
 }
 
 type Type = fmt.Stringer
+
+type ObjectDescType struct {
+	ObjectDescription
+}
+
+func (o ObjectDescType) String() string {
+	return o.GetName()
+}
+
 type ObjectDescription interface {
 	DebuggerObject
 

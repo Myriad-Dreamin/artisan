@@ -66,9 +66,8 @@ func (c *category) SubCate(path string, cat Category) Category {
 }
 
 func (c *category) DiveIn(path string) Category {
-	cat := &category{
-		path: path,
-	}
+	cat := newCategory()
+	cat.path = path
 	c.SubCate(path, cat)
 	return cat
 }
@@ -124,9 +123,12 @@ func (c *category) CreateCategoryDescription(ctx *Context) CategoryDescription {
 		desc.objDesc = append(desc.objDesc, obj.CreateObjectDescription(ctx))
 	}
 
-	for _, sub := range c.subs {
-		subDesc := sub.CreateCategoryDescription(ctx.Clone())
-		desc.subCates[subDesc.GetName()] = subDesc
+	if c.subs != nil {
+		desc.subCates = make(map[string]CategoryDescription)
+		for _, sub := range c.subs {
+			subDesc := sub.CreateCategoryDescription(ctx.Clone())
+			desc.subCates[subDesc.GetName()] = subDesc
+		}
 	}
 	desc.name = c.name
 	desc.path = c.path

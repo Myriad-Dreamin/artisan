@@ -45,7 +45,7 @@ func (desc *objectDescription) GetPackages() PackageSet {
 }
 
 func (desc *objectDescription) GetType() Type {
-	return pureType{typeString: desc.name}
+	return ObjectDescType{desc}
 }
 
 func (desc *objectDescription) GenObjectTmpl() ObjTmpl {

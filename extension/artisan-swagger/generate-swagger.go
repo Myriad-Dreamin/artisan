@@ -8,10 +8,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path"
+	"reflect"
 	"strings"
 )
 
-func unwrapHumanInfo(source interface{}, target interface{}) {
+func unmarshalHumanInfo(source interface{}, target interface{}) {
 	var err error
 
 	if source != nil {
@@ -60,8 +61,36 @@ func GenerateSwagger(desc *artisan_core.PublishedServices) *spec.Swagger {
 		}
 	}
 
+	if doc.Definitions != nil {
+		var schema spec.Schema
+
+		schema.Type = []string{"object"}
+		schema.Properties = make(map[string]spec.Schema)
+
+		var codeSchema spec.Schema
+		codeSchema.Type = []string{"integer"}
+		codeSchema.Format = "int"
+
+		var errorSchema spec.Schema
+		errorSchema.Type = []string{"string"}
+
+		var paramSchema spec.Schema
+		errorSchema.Type = []string{"object"}
+
+		var paramsSchema spec.Schema
+		paramsSchema.Type = []string{"object"}
+		paramsSchema.Items = new(spec.SchemaOrArray)
+		paramsSchema.Items.Schema = &paramSchema
+
+		schema.Properties["code"] = codeSchema
+		schema.Properties["error"] = errorSchema
+		schema.Properties["params"] = paramsSchema
+
+		doc.Definitions["genericResponse"] = schema
+	}
+
 	var toMerge = new(spec.Swagger)
-	unwrapHumanInfo(desc.HumanInfo, toMerge)
+	unmarshalHumanInfo(desc.HumanInfo, toMerge)
 	(*mergingSwagger)(doc).Merge(toMerge)
 	return doc
 }
@@ -80,7 +109,7 @@ func generateMethodsAndObjects(doc *spec.Swagger, tag *spec.Tag, base string, c 
 	var pathItem spec.PathItem
 
 	for _, method := range c.GetMethods() {
-		generatedOperation := generateOperation(method)
+		generatedOperation := generateOperation(doc ,method)
 
 		generatedOperation.Tags = []string{tag.Name}
 		switch method.GetMethodType() {
@@ -108,7 +137,17 @@ func generateMethodsAndObjects(doc *spec.Swagger, tag *spec.Tag, base string, c 
 	doc.Paths.Paths[subBase] = pathItem
 }
 
-func generateOperation(method artisan_core.MethodDescription) *spec.Operation {
+func createRefSchema(schemaName string) spec.Schema {
+	return spec.Schema{
+		SchemaProps:        spec.SchemaProps{
+			Ref: spec.MustCreateRef("#/definitions/" + schemaName),
+		},
+	}
+}
+
+var responseGeneric = createRefSchema("genericResponse")
+
+func generateOperation(doc *spec.Swagger, method artisan_core.MethodDescription) *spec.Operation {
 	var o = new(spec.Operation)
 	_ = method.GetRequests()
 	replies := method.GetReplies()
@@ -127,19 +166,101 @@ func generateOperation(method artisan_core.MethodDescription) *spec.Operation {
 	o.Responses.StatusCodeResponses = make(map[int]spec.Response)
 
 	var resp = spec.Response{}
-	resp.Description = "the request is served and a response is returned."
-	o.Responses.StatusCodeResponses[http.StatusOK] = resp
-	resp = spec.Response{}
-	resp.Description = "the request is serving." +
-		"however, the backend fall back and no response is returned."
+	resp.Description = "the request is serving. " +
+		"however, the backend crashed and no response is returned."
 	o.Responses.StatusCodeResponses[http.StatusInternalServerError] = resp
-
-	switch len(replies) {
-	case 0:
-	case 1:
-	default:
+	resp = spec.Response{}
+	resp.Description = "the request is served and a response is returned."
+	var mainSchema = new(spec.Schema)
+	resp.Schema = mainSchema
+	o.Responses.StatusCodeResponses[http.StatusOK] = resp
+	mainSchema.AllOf = append(mainSchema.AllOf, responseGeneric)
+	for _, reply := range replies {
+		generateSchema(doc, reply.GenObjectTmpl())
+		mainSchema.AllOf = append(mainSchema.AllOf, createRefSchema(reply.GetType().String()))
 	}
 	return o
+}
+
+func generateSchema(doc *spec.Swagger, reply artisan_core.ObjTmpl) {
+	var schema spec.Schema
+
+	schema.Type = []string{"object"}
+	schema.Properties = make(map[string]spec.Schema)
+	if doc.Definitions == nil {
+		doc.Definitions = make(map[string]spec.Schema)
+	}
+	if _, ok := doc.Definitions[reply.GetName()]; ok {
+		return
+	}
+
+	for _, field := range reply.GetFields() {
+		switch ft := field.GetType().(type) {
+		case reflect.Type:
+			schema.Properties[field.GetTag()["form"]] = createRuntimeProp(ft)
+		case artisan_core.ObjectDescType:
+			generateSchema(doc, ft.GenObjectTmpl())
+			schema.Properties[field.GetTag()["form"]] = createRefSchema(ft.GetType().String())
+		}
+	}
+
+	doc.Definitions[reply.GetName()] = schema
+	return
+}
+
+func createRuntimeProp(t reflect.Type) (schema spec.Schema) {
+	switch t.Kind() {
+	case reflect.Int64:
+		schema.Type = []string{"integer"}
+		schema.Format = "int64"
+	case reflect.Int32:
+		schema.Type = []string{"integer"}
+		schema.Format = "int32"
+	case reflect.Int16:
+		schema.Type = []string{"integer"}
+		schema.Format = "int16"
+	case reflect.Int8:
+		schema.Type = []string{"integer"}
+		schema.Format = "int8"
+	case reflect.Int:
+		schema.Type = []string{"integer"}
+		schema.Format = "int"
+	case reflect.Uint64:
+		schema.Type = []string{"integer"}
+		schema.Format = "uint64"
+	case reflect.Uint32:
+		schema.Type = []string{"integer"}
+		schema.Format = "uint32"
+	case reflect.Uint16:
+		schema.Type = []string{"integer"}
+		schema.Format = "uint16"
+	case reflect.Uint8:
+		schema.Type = []string{"integer"}
+		schema.Format = "uint8"
+	case reflect.Uint:
+		schema.Type = []string{"integer"}
+		schema.Format = "uint"
+	case reflect.Bool:
+		schema.Type = []string{"boolean"}
+	case reflect.Slice:
+		schema.Type = []string{"array"}
+		schema.Items = new(spec.SchemaOrArray)
+		var xSchema = createRuntimeProp(t.Elem())
+		schema.Items.Schema = &xSchema
+	case reflect.Array:
+		schema.Type = []string{"array"}
+		var xSchema = createRuntimeProp(t.Elem())
+		schema.Items.Schema = &xSchema
+	case reflect.String:
+		schema.Type = []string{"string"}
+	case reflect.Float32:
+		schema.Type = []string{"float"}
+		schema.Format = "float32"
+	case reflect.Float64:
+		schema.Type = []string{"float"}
+		schema.Format = "float64"
+	}
+	return
 }
 
 func generateTag(v artisan_core.ServiceDescription) *spec.Tag {
@@ -151,6 +272,6 @@ func generateTag(v artisan_core.ServiceDescription) *spec.Tag {
 	//meta = v.GetMeta()
 	//_ = meta
 
-	unwrapHumanInfo(v.GetHumanInfo(), &tag)
+	unmarshalHumanInfo(v.GetHumanInfo(), &tag)
 	return &tag
 }

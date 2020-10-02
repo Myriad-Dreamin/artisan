@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -150,18 +151,34 @@ var responseGeneric = createRefSchema("genericResponse")
 
 func generateOperation(doc *spec.Swagger, method artisan_core.MethodDescription) *spec.Operation {
 	var o = new(spec.Operation)
-	_ = method.GetRequests()
-	replies := method.GetReplies()
 
 	o.ID = method.GetName()
+	var inType string
+
 	if method.GetMethodType() == artisan_core.GET {
 		o.Consumes = []string{"querystring"}
 		o.Produces = []string{"application/json"}
-
+		inType = "query"
 	} else {
 		o.Consumes = []string{"application/json", "application/x-www-form-urlencoded"}
 		o.Produces = []string{"application/json"}
+		inType = "body"
 	}
+
+	// generate requests
+
+	requests := method.GetRequests()
+
+	for i, request := range requests {
+		var param spec.Parameter
+		requestSchema := generateSchema(doc, request.GenObjectTmpl())
+		param.Name = "request.option" + strconv.Itoa(i)
+		param.Schema = &requestSchema
+		param.In = inType
+		o.Parameters = append(o.Parameters, param)
+	}
+
+	// generate responses
 
 	o.Responses = new(spec.Responses)
 	o.Responses.StatusCodeResponses = make(map[int]spec.Response)
@@ -176,7 +193,7 @@ func generateOperation(doc *spec.Swagger, method artisan_core.MethodDescription)
 	resp.Schema = mainSchema
 	o.Responses.StatusCodeResponses[http.StatusOK] = resp
 	mainSchema.AllOf = append(mainSchema.AllOf, responseGeneric)
-	for _, reply := range replies {
+	for _, reply := range method.GetReplies() {
 		mainSchema.AllOf = append(mainSchema.AllOf, generateSchema(doc, reply.GenObjectTmpl()))
 	}
 	return o
